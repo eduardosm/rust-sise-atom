@@ -5,6 +5,8 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
+#![deny(rust_2018_idioms)]
+
 #[cfg(test)]
 mod tests;
 
@@ -181,7 +183,7 @@ fn encode_float_generic(sign: bool, full_decoded: num_aux::flt2dec::decoder::Ful
             if sign {
                 output.push('-');
             }
-            
+
             const ZEROS_THRESHOLD: u16 = 9;
             let mut buf = [0u8; num_aux::flt2dec::MAX_SIG_DIGITS];
             let (digits, exp) = num_aux::flt2dec::strategy::grisu::format_shortest(decoded, &mut buf);
@@ -288,7 +290,7 @@ pub fn encode_byte_string_into(string: &[u8], output: &mut String) {
             b'\r' => output.push_str("\\r"),
             b'"' => output.push_str("\\\""),
             b'\\' => output.push_str("\\\\"),
-            0x20 ... 0x7E => output.push(char::from(chr)),
+            0x20 ..= 0x7E => output.push(char::from(chr)),
             _ => {
                 output.push_str("\\x");
                 output.push(nibble_to_hex(chr >> 4));
@@ -316,7 +318,7 @@ pub fn encode_ascii_string_into(string: &str, output: &mut String) {
             b'\r' => output.push_str("\\r"),
             b'"' => output.push_str("\\\""),
             b'\\' => output.push_str("\\\\"),
-            0x20 ... 0x7E => output.push(char::from(chr)),
+            0x20 ..= 0x7E => output.push(char::from(chr)),
             _ => {
                 assert!(chr <= 0x7F, "Invalid ASCII character");
                 output.push_str("\\x");
@@ -344,7 +346,7 @@ pub fn encode_utf8_string_into(string: &str, output: &mut String) {
             '\r' => output.push_str("\\r"),
             '"' => output.push_str("\\\""),
             '\\' => output.push_str("\\\\"),
-            '\x20' ... '\x7E' => output.push(chr),
+            '\x20' ..= '\x7E' => output.push(chr),
             _ => {
                 output.push_str("\\u{");
                 let code_beginning = output.len();
@@ -404,7 +406,7 @@ macro_rules! decode_signed_int {
                             state = State::AfterSign;
                         }
                         Some('+') => state = State::AfterSign,
-                        Some(chr @ '0' ... '9') => {
+                        Some(chr @ '0' ..= '9') => {
                             num = $uint::from(chr as u8 - b'0');
                             state = State::Digits;
                         }
@@ -413,7 +415,7 @@ macro_rules! decode_signed_int {
                 }
                 State::AfterSign => {
                     match iter.next() {
-                        Some(chr @ '0' ... '9') => {
+                        Some(chr @ '0' ..= '9') => {
                             num = $uint::from(chr as u8 - b'0');
                             state = State::Digits;
                         }
@@ -422,7 +424,7 @@ macro_rules! decode_signed_int {
                 }
                 State::Digits => {
                     match iter.next() {
-                        Some(chr @ '0' ... '9') => {
+                        Some(chr @ '0' ..= '9') => {
                             num = num.checked_mul(10)?.checked_add($uint::from(chr as u8 - b'0'))?;
                         }
                         Some(_) => return None,
@@ -483,7 +485,7 @@ macro_rules! decode_unsigned_int {
             match state {
                 State::Beginning => {
                     match iter.next() {
-                        Some(chr @ '0' ... '9') => {
+                        Some(chr @ '0' ..= '9') => {
                             num = $uint::from(chr as u8 - b'0');
                             state = State::Digits;
                         }
@@ -492,7 +494,7 @@ macro_rules! decode_unsigned_int {
                 }
                 State::Digits => {
                     match iter.next() {
-                        Some(chr @ '0' ... '9') => {
+                        Some(chr @ '0' ..= '9') => {
                             num = num.checked_mul(10)?.checked_add($uint::from(chr as u8 - b'0'))?;
                         }
                         Some(_) => return None,
@@ -593,7 +595,7 @@ fn decode_float_generic<T>(atom: &str) -> Option<T>
                         state = State::AfterSign;
                     }
                     Some('+') => state = State::AfterSign,
-                    Some(chr @ '0' ... '9') => {
+                    Some(chr @ '0' ..= '9') => {
                         int_begin = i;
                         int_len = 1;
                         int_is_zero &= chr == '0';
@@ -605,7 +607,7 @@ fn decode_float_generic<T>(atom: &str) -> Option<T>
             },
             State::AfterSign => {
                 match iter.next() {
-                    Some(chr @ '0' ... '9') => {
+                    Some(chr @ '0' ..= '9') => {
                         int_begin = i;
                         int_len = 1;
                         int_is_zero &= chr == '0';
@@ -617,7 +619,7 @@ fn decode_float_generic<T>(atom: &str) -> Option<T>
             }
             State::IntegerDigits => {
                 match iter.next() {
-                    Some(chr @ '0' ... '9') => {
+                    Some(chr @ '0' ..= '9') => {
                         int_len += 1;
                         int_is_zero &= chr == '0';
                     }
@@ -629,7 +631,7 @@ fn decode_float_generic<T>(atom: &str) -> Option<T>
             },
             State::AfterDot => {
                 match iter.next() {
-                    Some(chr @ '0' ... '9') => {
+                    Some(chr @ '0' ..= '9') => {
                         frac_begin = i;
                         frac_len = 1;
                         frac_is_zero &= chr == '0';
@@ -642,7 +644,7 @@ fn decode_float_generic<T>(atom: &str) -> Option<T>
             }
             State::FractionalDigits => {
                 match iter.next() {
-                    Some(chr @ '0' ... '9') => {
+                    Some(chr @ '0' ..= '9') => {
                         frac_len += 1;
                         frac_is_zero &= chr == '0';
                     }
@@ -658,7 +660,7 @@ fn decode_float_generic<T>(atom: &str) -> Option<T>
                         state = State::AfterExponentSign;
                     }
                     Some('+') => state = State::AfterExponentSign,
-                    Some(chr @ '0' ... '9') => {
+                    Some(chr @ '0' ..= '9') => {
                         exp_abs = u64::from(chr as u8 - b'0');
                         state = State::ExponentDigits;
                     }
@@ -667,7 +669,7 @@ fn decode_float_generic<T>(atom: &str) -> Option<T>
             }
             State::AfterExponentSign => {
                 match iter.next() {
-                    Some(chr @ '0' ... '9') => {
+                    Some(chr @ '0' ..= '9') => {
                         exp_abs = u64::from(chr as u8 - b'0');
                         state = State::ExponentDigits;
                     }
@@ -676,7 +678,7 @@ fn decode_float_generic<T>(atom: &str) -> Option<T>
             }
             State::ExponentDigits => {
                 match iter.next() {
-                    Some(chr @ '0' ... '9') => {
+                    Some(chr @ '0' ..= '9') => {
                         if exp_abs != u64::max_value() {
                             exp_abs = exp_abs.checked_mul(10)
                                 .and_then(|x| x.checked_add(u64::from(chr as u8 - b'0')))
@@ -860,7 +862,7 @@ pub fn decode_ascii_string(atom: &str) -> Option<String> {
                 match iter.next() {
                     Some('\\') => state = State::AfterBackslash,
                     Some('"') => state = State::Ending,
-                    Some(chr @ '\x00' ... '\x7F') => string.push(chr),
+                    Some(chr @ '\x00' ..= '\x7F') => string.push(chr),
                     Some(_) | None => return None,
                 }
             }
