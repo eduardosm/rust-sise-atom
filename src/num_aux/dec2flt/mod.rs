@@ -79,7 +79,7 @@
 
 use std::fmt;
 
-use self::parse::{parse_decimal, Decimal, Sign, ParseResult};
+use self::parse::{Decimal};
 use self::num::digits_to_big;
 use self::rawfp::RawFloat;
 
@@ -105,14 +105,12 @@ pub struct ParseFloatError {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum FloatErrorKind {
-    Empty,
     Invalid,
 }
 
 impl ParseFloatError {
     pub fn __description(&self) -> &str {
         match self.kind {
-            FloatErrorKind::Empty => "cannot parse float from empty string",
             FloatErrorKind::Invalid => "invalid float literal",
         }
     }
@@ -124,45 +122,8 @@ impl fmt::Display for ParseFloatError {
     }
 }
 
-fn pfe_empty() -> ParseFloatError {
-    ParseFloatError { kind: FloatErrorKind::Empty }
-}
-
 fn pfe_invalid() -> ParseFloatError {
     ParseFloatError { kind: FloatErrorKind::Invalid }
-}
-
-/// Splits a decimal string into sign and the rest, without inspecting or validating the rest.
-fn extract_sign(s: &str) -> (Sign, &str) {
-    match s.as_bytes()[0] {
-        b'+' => (Sign::Positive, &s[1..]),
-        b'-' => (Sign::Negative, &s[1..]),
-        // If the string is invalid, we never use the sign, so we don't need to validate here.
-        _ => (Sign::Positive, s),
-    }
-}
-
-/// Converts a decimal string into a floating point number.
-fn dec2flt<T: RawFloat>(s: &str) -> Result<T, ParseFloatError> {
-    if s.is_empty() {
-        return Err(pfe_empty())
-    }
-    let (sign, s) = extract_sign(s);
-    let flt = match parse_decimal(s) {
-        ParseResult::Valid(decimal) => convert(decimal)?,
-        ParseResult::ShortcutToInf => T::INFINITY,
-        ParseResult::ShortcutToZero => T::ZERO,
-        ParseResult::Invalid => match s {
-            "inf" => T::INFINITY,
-            "NaN" => T::NAN,
-            _ => { return Err(pfe_invalid()); }
-        }
-    };
-
-    match sign {
-        Sign::Positive => Ok(flt),
-        Sign::Negative => Ok(-flt),
-    }
 }
 
 /// The main workhorse for the decimal-to-float conversion: Orchestrate all the preprocessing

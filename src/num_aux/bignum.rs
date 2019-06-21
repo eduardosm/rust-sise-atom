@@ -365,23 +365,6 @@ macro_rules! define_bignum {
                 self
             }
 
-            /// Divides itself by a digit-sized `other` and returns its own
-            /// mutable reference *and* the remainder.
-            pub fn div_rem_small(&mut self, other: $ty) -> (&mut $name, $ty) {
-                use crate::num_aux::bignum::FullOps;
-
-                assert!(other > 0);
-
-                let sz = self.size;
-                let mut borrow = 0;
-                for a in self.base[..sz].iter_mut().rev() {
-                    let (q, r) = (*a).full_div_rem(other, borrow);
-                    *a = q;
-                    borrow = r;
-                }
-                (self, borrow)
-            }
-
             /// Divide self by another bignum, overwriting `q` with the quotient and `r` with the
             /// remainder.
             pub fn div_rem(&self, d: &$name, q: &mut $name, r: &mut $name) {
@@ -472,9 +455,3 @@ macro_rules! define_bignum {
 pub type Digit32 = u32;
 
 define_bignum!(Big32x40: type=Digit32, n=40);
-
-// this one is used for testing only.
-#[doc(hidden)]
-pub mod tests {
-    define_bignum!(Big8x3: type=u8, n=3);
-}
