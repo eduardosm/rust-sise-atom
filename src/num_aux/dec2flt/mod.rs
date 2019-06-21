@@ -174,9 +174,6 @@ pub(crate) fn convert<T: RawFloat>(mut decimal: Decimal<'_>) -> Result<T, ParseF
     }
     // Remove/shift out the decimal point.
     let e = decimal.exp - decimal.fractional.len() as i64;
-    if let Some(x) = algorithm::fast_path(decimal.integral, decimal.fractional, e) {
-        return Ok(x);
-    }
     // Big32x40 is limited to 1280 bits, which translates to about 385 decimal digits.
     // If we exceed this, we'll crash, so we error out before getting too close (within 10^10).
     let upper_bound = bound_intermediate_digits(&decimal, e);
