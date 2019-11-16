@@ -1,4 +1,4 @@
-// Taken from rust 38cd9489f75f4a4387296ee304e2287f7c32c211 libcore.
+// Taken from rust 9b0214d9c560c49e2836c8491aa21d3dbf9f5554 libcore.
 
 //! Numeric traits and functions for the built-in numeric types.
 
