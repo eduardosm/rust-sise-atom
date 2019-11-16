@@ -48,8 +48,14 @@ fn test_encode_i64() {
     assert_eq!(crate::encode_i64(0), "0");
     assert_eq!(crate::encode_i64(1), "1");
     assert_eq!(crate::encode_i64(-1), "-1");
-    assert_eq!(crate::encode_i64(9223372036854775807), "9223372036854775807");
-    assert_eq!(crate::encode_i64(-9223372036854775808), "-9223372036854775808");
+    assert_eq!(
+        crate::encode_i64(9223372036854775807),
+        "9223372036854775807"
+    );
+    assert_eq!(
+        crate::encode_i64(-9223372036854775808),
+        "-9223372036854775808"
+    );
 }
 
 #[test]
@@ -57,10 +63,14 @@ fn test_encode_i128() {
     assert_eq!(crate::encode_i128(0), "0");
     assert_eq!(crate::encode_i128(1), "1");
     assert_eq!(crate::encode_i128(-1), "-1");
-    assert_eq!(crate::encode_i128(170141183460469231731687303715884105727),
-               "170141183460469231731687303715884105727");
-    assert_eq!(crate::encode_i128(-170141183460469231731687303715884105728),
-               "-170141183460469231731687303715884105728");
+    assert_eq!(
+        crate::encode_i128(170141183460469231731687303715884105727),
+        "170141183460469231731687303715884105727"
+    );
+    assert_eq!(
+        crate::encode_i128(-170141183460469231731687303715884105728),
+        "-170141183460469231731687303715884105728"
+    );
 }
 
 #[test]
@@ -88,15 +98,20 @@ fn test_encode_u32() {
 fn test_encode_u64() {
     assert_eq!(crate::encode_u64(0), "0");
     assert_eq!(crate::encode_u64(1), "1");
-    assert_eq!(crate::encode_u64(18446744073709551615), "18446744073709551615");
+    assert_eq!(
+        crate::encode_u64(18446744073709551615),
+        "18446744073709551615"
+    );
 }
 
 #[test]
 fn test_encode_u128() {
     assert_eq!(crate::encode_u128(0), "0");
     assert_eq!(crate::encode_u128(1), "1");
-    assert_eq!(crate::encode_u128(340282366920938463463374607431768211455),
-               "340282366920938463463374607431768211455");
+    assert_eq!(
+        crate::encode_u128(340282366920938463463374607431768211455),
+        "340282366920938463463374607431768211455"
+    );
 }
 
 #[test]
@@ -146,11 +161,23 @@ fn test_encode_f64() {
     assert_eq!(crate::encode_f64(1234.5678), "1234.5678");
     assert_eq!(crate::encode_f64(4.591856e50), "4.591856e50");
     assert_eq!(crate::encode_f64(4.591856e-50), "4.591856e-50");
-    assert_eq!(crate::encode_f64(4.80144468355317e-300), "4.80144468355317e-300");
-    assert_eq!(crate::encode_f64(4.80144468355317e+300), "4.80144468355317e300");
+    assert_eq!(
+        crate::encode_f64(4.80144468355317e-300),
+        "4.80144468355317e-300"
+    );
+    assert_eq!(
+        crate::encode_f64(4.80144468355317e+300),
+        "4.80144468355317e300"
+    );
     assert_eq!(crate::encode_f64(1.2e-315), "1.2e-315");
-    assert_eq!(crate::encode_f64(1.7976931348623157e+308), "1.7976931348623157e308");
-    assert_eq!(crate::encode_f64(2.2250738585072014e-308), "2.2250738585072014e-308");
+    assert_eq!(
+        crate::encode_f64(1.7976931348623157e+308),
+        "1.7976931348623157e308"
+    );
+    assert_eq!(
+        crate::encode_f64(2.2250738585072014e-308),
+        "2.2250738585072014e-308"
+    );
     assert_eq!(crate::encode_f64(5.0e-324), "5.0e-324");
 }
 
@@ -165,7 +192,6 @@ fn test_encode_byte_string() {
     assert_eq!(crate::encode_byte_string(b" \x00 "), r#"" \x00 ""#);
     assert_eq!(crate::encode_byte_string(b" \xFF "), r#"" \xff ""#);
 }
-
 
 #[test]
 fn test_encode_ascii_string() {
@@ -267,9 +293,18 @@ fn test_decode_i64() {
     assert_eq!(crate::decode_i64("-1"), Some(-1));
     assert_eq!(crate::decode_i64("+1"), Some(1));
 
-    assert_eq!(crate::decode_i64("-9223372036854775808"), Some(-9223372036854775808));
-    assert_eq!(crate::decode_i64("9223372036854775807"), Some(9223372036854775807));
-    assert_eq!(crate::decode_i64("-9223372036854775807"), Some(-9223372036854775807));
+    assert_eq!(
+        crate::decode_i64("-9223372036854775808"),
+        Some(-9223372036854775808)
+    );
+    assert_eq!(
+        crate::decode_i64("9223372036854775807"),
+        Some(9223372036854775807)
+    );
+    assert_eq!(
+        crate::decode_i64("-9223372036854775807"),
+        Some(-9223372036854775807)
+    );
 
     assert_eq!(crate::decode_i64(""), None);
     assert_eq!(crate::decode_i64("-9223372036854775809"), None);
@@ -285,16 +320,28 @@ fn test_decode_i128() {
     assert_eq!(crate::decode_i128("-1"), Some(-1));
     assert_eq!(crate::decode_i128("+1"), Some(1));
 
-    assert_eq!(crate::decode_i128("-170141183460469231731687303715884105728"),
-               Some(-170141183460469231731687303715884105728));
-    assert_eq!(crate::decode_i128("170141183460469231731687303715884105727"),
-               Some(170141183460469231731687303715884105727));
-    assert_eq!(crate::decode_i128("-170141183460469231731687303715884105727"),
-               Some(-170141183460469231731687303715884105727));
+    assert_eq!(
+        crate::decode_i128("-170141183460469231731687303715884105728"),
+        Some(-170141183460469231731687303715884105728)
+    );
+    assert_eq!(
+        crate::decode_i128("170141183460469231731687303715884105727"),
+        Some(170141183460469231731687303715884105727)
+    );
+    assert_eq!(
+        crate::decode_i128("-170141183460469231731687303715884105727"),
+        Some(-170141183460469231731687303715884105727)
+    );
 
     assert_eq!(crate::decode_i128(""), None);
-    assert_eq!(crate::decode_i128("-170141183460469231731687303715884105729"), None);
-    assert_eq!(crate::decode_i128("170141183460469231731687303715884105728"), None);
+    assert_eq!(
+        crate::decode_i128("-170141183460469231731687303715884105729"),
+        None
+    );
+    assert_eq!(
+        crate::decode_i128("170141183460469231731687303715884105728"),
+        None
+    );
 }
 
 #[test]
@@ -335,7 +382,10 @@ fn test_decode_u64() {
     assert_eq!(crate::decode_u64("0"), Some(0));
     assert_eq!(crate::decode_u64("1"), Some(1));
 
-    assert_eq!(crate::decode_u64("18446744073709551615"), Some(18446744073709551615));
+    assert_eq!(
+        crate::decode_u64("18446744073709551615"),
+        Some(18446744073709551615)
+    );
 
     assert_eq!(crate::decode_u64(""), None);
     assert_eq!(crate::decode_u64("18446744073709551616"), None);
@@ -346,11 +396,16 @@ fn test_decode_u128() {
     assert_eq!(crate::decode_u128("0"), Some(0));
     assert_eq!(crate::decode_u128("1"), Some(1));
 
-    assert_eq!(crate::decode_u128("340282366920938463463374607431768211455"),
-               Some(340282366920938463463374607431768211455));
+    assert_eq!(
+        crate::decode_u128("340282366920938463463374607431768211455"),
+        Some(340282366920938463463374607431768211455)
+    );
 
     assert_eq!(crate::decode_u128(""), None);
-    assert_eq!(crate::decode_u128("340282366920938463463374607431768211456"), None);
+    assert_eq!(
+        crate::decode_u128("340282366920938463463374607431768211456"),
+        None
+    );
 }
 
 #[test]
@@ -391,17 +446,35 @@ fn test_decode_f32() {
     assert!(approx(crate::decode_f32("1.1e-2").unwrap(), 1.1e-2));
     assert!(approx(crate::decode_f32("123e-20").unwrap(), 123.0e-20));
     assert!(approx(crate::decode_f32("123e+20").unwrap(), 123.0e20));
-    assert!(approx(crate::decode_f32("1000000000000").unwrap(), 1000000000000.0));
-    assert!(approx(crate::decode_f32("0.000000000001").unwrap(), 0.000000000001));
+    assert!(approx(
+        crate::decode_f32("1000000000000").unwrap(),
+        1000000000000.0
+    ));
+    assert!(approx(
+        crate::decode_f32("0.000000000001").unwrap(),
+        0.000000000001
+    ));
     assert!(approx(crate::decode_f32("1.23456789").unwrap(), 1.23456789));
     assert!(approx(crate::decode_f32("480.1444").unwrap(), 480.1444));
-    assert!(approx(crate::decode_f32("480.1444e-30").unwrap(), 480.1444e-30));
-    assert!(approx(crate::decode_f32("480.1444e+30").unwrap(), 480.1444e+30));
+    assert!(approx(
+        crate::decode_f32("480.1444e-30").unwrap(),
+        480.1444e-30
+    ));
+    assert!(approx(
+        crate::decode_f32("480.1444e+30").unwrap(),
+        480.1444e+30
+    ));
 
     assert_eq!(crate::decode_f32("0e99999999999999999"), Some(0.0));
     assert_eq!(crate::decode_f32("1e-99999999999999999"), Some(0.0));
-    assert_eq!(crate::decode_f32("0e9999999999999999999999999999999999"), Some(0.0));
-    assert_eq!(crate::decode_f32("1e-9999999999999999999999999999999999"), Some(0.0));
+    assert_eq!(
+        crate::decode_f32("0e9999999999999999999999999999999999"),
+        Some(0.0)
+    );
+    assert_eq!(
+        crate::decode_f32("1e-9999999999999999999999999999999999"),
+        Some(0.0)
+    );
 
     assert_eq!(crate::decode_f32(""), None);
     assert_eq!(crate::decode_f32("."), None);
@@ -414,7 +487,10 @@ fn test_decode_f32() {
     assert_eq!(crate::decode_f32("-e1"), None);
     assert_eq!(crate::decode_f32("-E1"), None);
     assert_eq!(crate::decode_f32("1e1000"), None);
-    assert_eq!(crate::decode_f32("1e9999999999999999999999999999999999"), None);
+    assert_eq!(
+        crate::decode_f32("1e9999999999999999999999999999999999"),
+        None
+    );
     assert_eq!(crate::decode_f32("1e"), None);
     assert_eq!(crate::decode_f32("1E"), None);
 }
@@ -457,18 +533,42 @@ fn test_decode_f64() {
     assert!(approx(crate::decode_f64("1.1e-2").unwrap(), 1.1e-2));
     assert!(approx(crate::decode_f64("123e-90").unwrap(), 123.0e-90));
     assert!(approx(crate::decode_f64("123e+90").unwrap(), 123.0e90));
-    assert!(approx(crate::decode_f64("1000000000000").unwrap(), 1000000000000.0));
-    assert!(approx(crate::decode_f64("0.000000000001").unwrap(), 0.000000000001));
+    assert!(approx(
+        crate::decode_f64("1000000000000").unwrap(),
+        1000000000000.0
+    ));
+    assert!(approx(
+        crate::decode_f64("0.000000000001").unwrap(),
+        0.000000000001
+    ));
     assert!(approx(crate::decode_f64("1.23456789").unwrap(), 1.23456789));
-    assert!(approx(crate::decode_f64("1.2345678987654321").unwrap(), 1.2345678987654321));
-    assert!(approx(crate::decode_f64("480.144468355317204515627862").unwrap(), 480.144468355317204515627862));
-    assert!(approx(crate::decode_f64("480.144468355317204515627862e-250").unwrap(), 480.144468355317204515627862e-250));
-    assert!(approx(crate::decode_f64("480.144468355317204515627862e+250").unwrap(), 480.144468355317204515627862e+250));
+    assert!(approx(
+        crate::decode_f64("1.2345678987654321").unwrap(),
+        1.2345678987654321
+    ));
+    assert!(approx(
+        crate::decode_f64("480.144468355317204515627862").unwrap(),
+        480.144468355317204515627862
+    ));
+    assert!(approx(
+        crate::decode_f64("480.144468355317204515627862e-250").unwrap(),
+        480.144468355317204515627862e-250
+    ));
+    assert!(approx(
+        crate::decode_f64("480.144468355317204515627862e+250").unwrap(),
+        480.144468355317204515627862e+250
+    ));
 
     assert_eq!(crate::decode_f64("0e99999999999999999"), Some(0.0));
     assert_eq!(crate::decode_f64("1e-99999999999999999"), Some(0.0));
-    assert_eq!(crate::decode_f64("0e9999999999999999999999999999999999"), Some(0.0));
-    assert_eq!(crate::decode_f64("1e-9999999999999999999999999999999999"), Some(0.0));
+    assert_eq!(
+        crate::decode_f64("0e9999999999999999999999999999999999"),
+        Some(0.0)
+    );
+    assert_eq!(
+        crate::decode_f64("1e-9999999999999999999999999999999999"),
+        Some(0.0)
+    );
 
     assert_eq!(crate::decode_f64(""), None);
     assert_eq!(crate::decode_f64("."), None);
@@ -481,7 +581,10 @@ fn test_decode_f64() {
     assert_eq!(crate::decode_f64("-e1"), None);
     assert_eq!(crate::decode_f64("-E1"), None);
     assert_eq!(crate::decode_f64("1e1000"), None);
-    assert_eq!(crate::decode_f64("1e9999999999999999999999999999999999"), None);
+    assert_eq!(
+        crate::decode_f64("1e9999999999999999999999999999999999"),
+        None
+    );
     assert_eq!(crate::decode_f64("1e"), None);
     assert_eq!(crate::decode_f64("1E"), None);
 }
@@ -492,9 +595,18 @@ fn test_decode_byte_string() {
     assert_eq!(crate::decode_byte_string(r#""123""#).unwrap(), b"123");
     assert_eq!(crate::decode_byte_string(r#"" \\ ""#).unwrap(), b" \\ ");
     assert_eq!(crate::decode_byte_string(r#"" \" ""#).unwrap(), b" \" ");
-    assert_eq!(crate::decode_byte_string(r#"" \r\n\t ""#).unwrap(), b" \r\n\t ");
-    assert_eq!(crate::decode_byte_string(r#"" \x00\xFF ""#).unwrap(), b" \x00\xFF ");
-    assert_eq!(crate::decode_byte_string(r#"" \xaB\xCd ""#).unwrap(), b" \xAB\xCD ");
+    assert_eq!(
+        crate::decode_byte_string(r#"" \r\n\t ""#).unwrap(),
+        b" \r\n\t "
+    );
+    assert_eq!(
+        crate::decode_byte_string(r#"" \x00\xFF ""#).unwrap(),
+        b" \x00\xFF "
+    );
+    assert_eq!(
+        crate::decode_byte_string(r#"" \xaB\xCd ""#).unwrap(),
+        b" \xAB\xCD "
+    );
 
     assert_eq!(crate::decode_byte_string(""), None);
     assert_eq!(crate::decode_byte_string(r#"""#), None);
@@ -511,9 +623,18 @@ fn test_decode_ascii_string() {
     assert_eq!(crate::decode_ascii_string(r#""123""#).unwrap(), "123");
     assert_eq!(crate::decode_ascii_string(r#"" \\ ""#).unwrap(), " \\ ");
     assert_eq!(crate::decode_ascii_string(r#"" \" ""#).unwrap(), " \" ");
-    assert_eq!(crate::decode_ascii_string(r#"" \r\n\t ""#).unwrap(), " \r\n\t ");
-    assert_eq!(crate::decode_ascii_string(r#"" \x00\x7F ""#).unwrap(), " \x00\x7F ");
-    assert_eq!(crate::decode_ascii_string(r#"" \x1B\x1d ""#).unwrap(), " \x1B\x1D ");
+    assert_eq!(
+        crate::decode_ascii_string(r#"" \r\n\t ""#).unwrap(),
+        " \r\n\t "
+    );
+    assert_eq!(
+        crate::decode_ascii_string(r#"" \x00\x7F ""#).unwrap(),
+        " \x00\x7F "
+    );
+    assert_eq!(
+        crate::decode_ascii_string(r#"" \x1B\x1d ""#).unwrap(),
+        " \x1B\x1D "
+    );
 
     assert_eq!(crate::decode_ascii_string(""), None);
     assert_eq!(crate::decode_ascii_string("\" \u{FF} \""), None);
@@ -532,12 +653,30 @@ fn test_decode_utf8_string() {
     assert_eq!(crate::decode_utf8_string(r#""123""#).unwrap(), "123");
     assert_eq!(crate::decode_utf8_string(r#"" \\ ""#).unwrap(), " \\ ");
     assert_eq!(crate::decode_utf8_string(r#"" \" ""#).unwrap(), " \" ");
-    assert_eq!(crate::decode_utf8_string(r#"" \r\n\t ""#).unwrap(), " \r\n\t ");
-    assert_eq!(crate::decode_utf8_string(r#"" \x00\x7F ""#).unwrap(), " \x00\x7F ");
-    assert_eq!(crate::decode_utf8_string(r#"" \x1B\x1d ""#).unwrap(), " \x1B\x1D ");
-    assert_eq!(crate::decode_utf8_string("\" \u{FF} \"").unwrap(), " \u{FF} ");
-    assert_eq!(crate::decode_utf8_string(r#"" \u{FF} ""#).unwrap(), " \u{FF} ");
-    assert_eq!(crate::decode_utf8_string(r#"" \u{ff} ""#).unwrap(), " \u{FF} ");
+    assert_eq!(
+        crate::decode_utf8_string(r#"" \r\n\t ""#).unwrap(),
+        " \r\n\t "
+    );
+    assert_eq!(
+        crate::decode_utf8_string(r#"" \x00\x7F ""#).unwrap(),
+        " \x00\x7F "
+    );
+    assert_eq!(
+        crate::decode_utf8_string(r#"" \x1B\x1d ""#).unwrap(),
+        " \x1B\x1D "
+    );
+    assert_eq!(
+        crate::decode_utf8_string("\" \u{FF} \"").unwrap(),
+        " \u{FF} "
+    );
+    assert_eq!(
+        crate::decode_utf8_string(r#"" \u{FF} ""#).unwrap(),
+        " \u{FF} "
+    );
+    assert_eq!(
+        crate::decode_utf8_string(r#"" \u{ff} ""#).unwrap(),
+        " \u{FF} "
+    );
 
     assert_eq!(crate::decode_utf8_string(""), None);
     assert_eq!(crate::decode_utf8_string(r#"""#), None);

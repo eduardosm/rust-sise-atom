@@ -11,13 +11,18 @@
 mod tests;
 
 #[allow(clippy::all)]
+#[rustfmt::skip]
 mod num_aux;
 
 // Encode
 /// Returns `"true"` if `value` is `true`,
 /// otherwise returns `"false"`.
 pub fn encode_bool(value: bool) -> &'static str {
-    if value { "true" } else { "false" }
+    if value {
+        "true"
+    } else {
+        "false"
+    }
 }
 
 macro_rules! encode_signed_int {
@@ -39,7 +44,7 @@ macro_rules! encode_signed_int {
                 break;
             }
         }
-    }
+    };
 }
 
 pub fn encode_i8_into(value: i8, output: &mut String) {
@@ -109,7 +114,7 @@ macro_rules! encode_unsigned_int {
                 break;
             }
         }
-    }
+    };
 }
 
 pub fn encode_u8_into(value: u8, output: &mut String) {
@@ -167,7 +172,11 @@ pub fn encode_u128(value: u128) -> String {
     output
 }
 
-fn encode_float_generic(sign: bool, full_decoded: num_aux::flt2dec::decoder::FullDecoded, output: &mut String) {
+fn encode_float_generic(
+    sign: bool,
+    full_decoded: num_aux::flt2dec::decoder::FullDecoded,
+    output: &mut String,
+) {
     match full_decoded {
         num_aux::flt2dec::decoder::FullDecoded::Nan => {
             output.push_str("NaN");
@@ -185,14 +194,15 @@ fn encode_float_generic(sign: bool, full_decoded: num_aux::flt2dec::decoder::Ful
 
             const ZEROS_THRESHOLD: u16 = 9;
             let mut buf = [0u8; num_aux::flt2dec::MAX_SIG_DIGITS];
-            let (digits, exp) = num_aux::flt2dec::strategy::grisu::format_shortest(decoded, &mut buf);
+            let (digits, exp) =
+                num_aux::flt2dec::strategy::grisu::format_shortest(decoded, &mut buf);
             if exp <= 0 {
                 let exp = (-exp) as u16;
                 if exp > ZEROS_THRESHOLD {
                     output.push(char::from(buf[0]));
                     output.push('.');
                     if digits > 1 {
-                        for &chr in buf[1 .. digits].iter() {
+                        for &chr in buf[1..digits].iter() {
                             output.push(char::from(chr));
                         }
                     } else {
@@ -202,21 +212,23 @@ fn encode_float_generic(sign: bool, full_decoded: num_aux::flt2dec::decoder::Ful
                     encode_u32_into(u32::from(exp + 1), output);
                 } else {
                     output.push_str("0.");
-                    for _ in 0 .. exp {
+                    for _ in 0..exp {
                         output.push('0');
                     }
-                    for &chr in buf[0 .. digits].iter() {
+                    for &chr in buf[0..digits].iter() {
                         output.push(char::from(chr));
                     }
                 }
-            } else /*if exp>0*/ {
+            } else
+            /*if exp>0*/
+            {
                 let exp = exp as usize;
                 if exp >= digits {
                     if exp > ZEROS_THRESHOLD as usize {
                         output.push(char::from(buf[0]));
                         output.push('.');
                         if digits > 1 {
-                            for &chr in buf[1 .. digits].iter() {
+                            for &chr in buf[1..digits].iter() {
                                 output.push(char::from(chr));
                             }
                         } else {
@@ -225,20 +237,22 @@ fn encode_float_generic(sign: bool, full_decoded: num_aux::flt2dec::decoder::Ful
                         output.push('e');
                         encode_u32_into((exp - 1) as u32, output);
                     } else {
-                        for &chr in buf[0 .. digits].iter() {
+                        for &chr in buf[0..digits].iter() {
                             output.push(char::from(chr));
                         }
-                        for _ in 0 .. (exp - digits) {
+                        for _ in 0..(exp - digits) {
                             output.push('0');
                         }
                         output.push_str(".0");
                     }
-                } else /*if exp < digits*/ {
-                    for &chr in buf[0 .. exp].iter() {
+                } else
+                /*if exp < digits*/
+                {
+                    for &chr in buf[0..exp].iter() {
                         output.push(char::from(chr));
                     }
                     output.push('.');
-                    for &chr in buf[exp .. digits].iter() {
+                    for &chr in buf[exp..digits].iter() {
                         output.push(char::from(chr));
                     }
                 }
@@ -289,7 +303,7 @@ pub fn encode_byte_string_into(string: &[u8], output: &mut String) {
             b'\r' => output.push_str("\\r"),
             b'"' => output.push_str("\\\""),
             b'\\' => output.push_str("\\\\"),
-            0x20 ..= 0x7E => output.push(char::from(chr)),
+            0x20..=0x7E => output.push(char::from(chr)),
             _ => {
                 output.push_str("\\x");
                 output.push(nibble_to_hex(chr >> 4));
@@ -317,7 +331,7 @@ pub fn encode_ascii_string_into(string: &str, output: &mut String) {
             b'\r' => output.push_str("\\r"),
             b'"' => output.push_str("\\\""),
             b'\\' => output.push_str("\\\\"),
-            0x20 ..= 0x7E => output.push(char::from(chr)),
+            0x20..=0x7E => output.push(char::from(chr)),
             _ => {
                 assert!(chr <= 0x7F, "Invalid ASCII character");
                 output.push_str("\\x");
@@ -345,13 +359,16 @@ pub fn encode_utf8_string_into(string: &str, output: &mut String) {
             '\r' => output.push_str("\\r"),
             '"' => output.push_str("\\\""),
             '\\' => output.push_str("\\\\"),
-            '\x20' ..= '\x7E' => output.push(chr),
+            '\x20'..='\x7E' => output.push(chr),
             _ => {
                 output.push_str("\\u{");
                 let code_beginning = output.len();
                 let mut remaining_digits = u32::from(chr);
                 loop {
-                    output.insert(code_beginning, nibble_to_hex((remaining_digits & 0xF) as u8));
+                    output.insert(
+                        code_beginning,
+                        nibble_to_hex((remaining_digits & 0xF) as u8),
+                    );
                     remaining_digits >>= 4;
                     if remaining_digits == 0 {
                         break;
@@ -398,38 +415,34 @@ macro_rules! decode_signed_int {
         let mut state = State::Beginning;
         loop {
             match state {
-                State::Beginning => {
-                    match iter.next() {
-                        Some('-') => {
-                            sign = true;
-                            state = State::AfterSign;
-                        }
-                        Some('+') => state = State::AfterSign,
-                        Some(chr @ '0' ..= '9') => {
-                            num = $uint::from(chr as u8 - b'0');
-                            state = State::Digits;
-                        }
-                        Some(_) | None => return None,
+                State::Beginning => match iter.next() {
+                    Some('-') => {
+                        sign = true;
+                        state = State::AfterSign;
                     }
-                }
-                State::AfterSign => {
-                    match iter.next() {
-                        Some(chr @ '0' ..= '9') => {
-                            num = $uint::from(chr as u8 - b'0');
-                            state = State::Digits;
-                        }
-                        Some(_) | None => return None,
+                    Some('+') => state = State::AfterSign,
+                    Some(chr @ '0'..='9') => {
+                        num = $uint::from(chr as u8 - b'0');
+                        state = State::Digits;
                     }
-                }
-                State::Digits => {
-                    match iter.next() {
-                        Some(chr @ '0' ..= '9') => {
-                            num = num.checked_mul(10)?.checked_add($uint::from(chr as u8 - b'0'))?;
-                        }
-                        Some(_) => return None,
-                        None => break,
+                    Some(_) | None => return None,
+                },
+                State::AfterSign => match iter.next() {
+                    Some(chr @ '0'..='9') => {
+                        num = $uint::from(chr as u8 - b'0');
+                        state = State::Digits;
                     }
-                }
+                    Some(_) | None => return None,
+                },
+                State::Digits => match iter.next() {
+                    Some(chr @ '0'..='9') => {
+                        num = num
+                            .checked_mul(10)?
+                            .checked_add($uint::from(chr as u8 - b'0'))?;
+                    }
+                    Some(_) => return None,
+                    None => break,
+                },
             }
         }
 
@@ -482,24 +495,22 @@ macro_rules! decode_unsigned_int {
         let mut state = State::Beginning;
         loop {
             match state {
-                State::Beginning => {
-                    match iter.next() {
-                        Some(chr @ '0' ..= '9') => {
-                            num = $uint::from(chr as u8 - b'0');
-                            state = State::Digits;
-                        }
-                        Some(_) | None => return None,
+                State::Beginning => match iter.next() {
+                    Some(chr @ '0'..='9') => {
+                        num = $uint::from(chr as u8 - b'0');
+                        state = State::Digits;
                     }
-                }
-                State::Digits => {
-                    match iter.next() {
-                        Some(chr @ '0' ..= '9') => {
-                            num = num.checked_mul(10)?.checked_add($uint::from(chr as u8 - b'0'))?;
-                        }
-                        Some(_) => return None,
-                        None => break,
+                    Some(_) | None => return None,
+                },
+                State::Digits => match iter.next() {
+                    Some(chr @ '0'..='9') => {
+                        num = num
+                            .checked_mul(10)?
+                            .checked_add($uint::from(chr as u8 - b'0'))?;
                     }
-                }
+                    Some(_) => return None,
+                    None => break,
+                },
             }
         }
 
@@ -552,7 +563,8 @@ impl Float for f32 {
 }
 
 fn decode_float_generic<T>(atom: &str) -> Option<T>
-    where T: num_aux::dec2flt::rawfp::RawFloat + Float
+where
+    T: num_aux::dec2flt::rawfp::RawFloat + Float,
 {
     match atom {
         "NaN" => return Some(T::NAN),
@@ -587,107 +599,92 @@ fn decode_float_generic<T>(atom: &str) -> Option<T>
     let mut i = 0;
     loop {
         match state {
-            State::Beginning => {
-                match iter.next() {
-                    Some('-') => {
-                        sign = true;
-                        state = State::AfterSign;
-                    }
-                    Some('+') => state = State::AfterSign,
-                    Some(chr @ '0' ..= '9') => {
-                        int_begin = i;
-                        int_len = 1;
-                        int_is_zero &= chr == '0';
-                        state = State::IntegerDigits;
-                    }
-                    Some('.') => state = State::AfterDot,
-                    Some(_) | None => return None,
+            State::Beginning => match iter.next() {
+                Some('-') => {
+                    sign = true;
+                    state = State::AfterSign;
                 }
+                Some('+') => state = State::AfterSign,
+                Some(chr @ '0'..='9') => {
+                    int_begin = i;
+                    int_len = 1;
+                    int_is_zero &= chr == '0';
+                    state = State::IntegerDigits;
+                }
+                Some('.') => state = State::AfterDot,
+                Some(_) | None => return None,
             },
-            State::AfterSign => {
-                match iter.next() {
-                    Some(chr @ '0' ..= '9') => {
-                        int_begin = i;
-                        int_len = 1;
-                        int_is_zero &= chr == '0';
-                        state = State::IntegerDigits;
-                    }
-                    Some('.') => state = State::AfterDot,
-                    Some(_) | None => return None,
+            State::AfterSign => match iter.next() {
+                Some(chr @ '0'..='9') => {
+                    int_begin = i;
+                    int_len = 1;
+                    int_is_zero &= chr == '0';
+                    state = State::IntegerDigits;
                 }
-            }
-            State::IntegerDigits => {
-                match iter.next() {
-                    Some(chr @ '0' ..= '9') => {
-                        int_len += 1;
-                        int_is_zero &= chr == '0';
-                    }
-                    Some('.') => state = State::AfterDot,
-                    Some('e') | Some('E') => state = State::ExponentBeginning,
-                    Some(_) => return None,
-                    None => break,
-                }
+                Some('.') => state = State::AfterDot,
+                Some(_) | None => return None,
             },
-            State::AfterDot => {
-                match iter.next() {
-                    Some(chr @ '0' ..= '9') => {
-                        frac_begin = i;
-                        frac_len = 1;
-                        frac_is_zero &= chr == '0';
-                        state = State::FractionalDigits;
-                    }
-                    Some('e') | Some('E') => state = State::ExponentBeginning,
-                    Some(_) => return None,
-                    None => break,
+            State::IntegerDigits => match iter.next() {
+                Some(chr @ '0'..='9') => {
+                    int_len += 1;
+                    int_is_zero &= chr == '0';
                 }
-            }
-            State::FractionalDigits => {
-                match iter.next() {
-                    Some(chr @ '0' ..= '9') => {
-                        frac_len += 1;
-                        frac_is_zero &= chr == '0';
-                    }
-                    Some('e') | Some('E') => state = State::ExponentBeginning,
-                    Some(_) => return None,
-                    None => break,
+                Some('.') => state = State::AfterDot,
+                Some('e') | Some('E') => state = State::ExponentBeginning,
+                Some(_) => return None,
+                None => break,
+            },
+            State::AfterDot => match iter.next() {
+                Some(chr @ '0'..='9') => {
+                    frac_begin = i;
+                    frac_len = 1;
+                    frac_is_zero &= chr == '0';
+                    state = State::FractionalDigits;
                 }
-            }
-            State::ExponentBeginning => {
-                match iter.next() {
-                    Some('-') => {
-                        exp_sign = true;
-                        state = State::AfterExponentSign;
-                    }
-                    Some('+') => state = State::AfterExponentSign,
-                    Some(chr @ '0' ..= '9') => {
-                        exp_abs = u64::from(chr as u8 - b'0');
-                        state = State::ExponentDigits;
-                    }
-                    Some(_) | None => return None,
+                Some('e') | Some('E') => state = State::ExponentBeginning,
+                Some(_) => return None,
+                None => break,
+            },
+            State::FractionalDigits => match iter.next() {
+                Some(chr @ '0'..='9') => {
+                    frac_len += 1;
+                    frac_is_zero &= chr == '0';
                 }
-            }
-            State::AfterExponentSign => {
-                match iter.next() {
-                    Some(chr @ '0' ..= '9') => {
-                        exp_abs = u64::from(chr as u8 - b'0');
-                        state = State::ExponentDigits;
-                    }
-                    Some(_) | None => return None,
+                Some('e') | Some('E') => state = State::ExponentBeginning,
+                Some(_) => return None,
+                None => break,
+            },
+            State::ExponentBeginning => match iter.next() {
+                Some('-') => {
+                    exp_sign = true;
+                    state = State::AfterExponentSign;
                 }
-            }
-            State::ExponentDigits => {
-                match iter.next() {
-                    Some(chr @ '0' ..= '9') => {
-                        if exp_abs != u64::max_value() {
-                            exp_abs = exp_abs.checked_mul(10)
-                                .and_then(|x| x.checked_add(u64::from(chr as u8 - b'0')))
-                                .unwrap_or(u64::max_value());
-                        }
-                    }
-                    Some(_) => return None,
-                    None => break,
+                Some('+') => state = State::AfterExponentSign,
+                Some(chr @ '0'..='9') => {
+                    exp_abs = u64::from(chr as u8 - b'0');
+                    state = State::ExponentDigits;
                 }
-            }
+                Some(_) | None => return None,
+            },
+            State::AfterExponentSign => match iter.next() {
+                Some(chr @ '0'..='9') => {
+                    exp_abs = u64::from(chr as u8 - b'0');
+                    state = State::ExponentDigits;
+                }
+                Some(_) | None => return None,
+            },
+            State::ExponentDigits => match iter.next() {
+                Some(chr @ '0'..='9') => {
+                    if exp_abs != u64::max_value() {
+                        exp_abs = exp_abs
+                            .checked_mul(10)
+                            .and_then(|x| x.checked_add(u64::from(chr as u8 - b'0')))
+                            .unwrap_or(u64::max_value());
+                    }
+                }
+                Some(_) => return None,
+                None => break,
+            },
         }
         i += 1;
     }
@@ -709,18 +706,24 @@ fn decode_float_generic<T>(atom: &str) -> Option<T>
             }
         } else {
             let atom = atom.as_bytes();
-            let integral = &atom[int_begin .. (int_begin + int_len)];
-            let fractional = &atom[frac_begin .. (frac_begin + frac_len)];
-            let exp = if exp_sign { -(exp_abs as i64) } else { exp_abs as i64 };
+            let integral = &atom[int_begin..(int_begin + int_len)];
+            let fractional = &atom[frac_begin..(frac_begin + frac_len)];
+            let exp = if exp_sign {
+                -(exp_abs as i64)
+            } else {
+                exp_abs as i64
+            };
 
             let parsed_dec = num_aux::dec2flt::parse::Decimal::new(integral, fractional, exp);
-            num_aux::dec2flt::convert::<T>(parsed_dec).ok().and_then(|r| {
-                if r.is_finite() {
-                    Some(if sign { -r } else { r })
-                } else {
-                    None
-                }
-            })
+            num_aux::dec2flt::convert::<T>(parsed_dec)
+                .ok()
+                .and_then(|r| {
+                    if r.is_finite() {
+                        Some(if sign { -r } else { r })
+                    } else {
+                        None
+                    }
+                })
         }
     }
 }
@@ -761,76 +764,64 @@ pub fn decode_byte_string(atom: &str) -> Option<Vec<u8>> {
     let mut state = State::Beginning;
     loop {
         match state {
-            State::Beginning => {
-                match iter.next() {
-                    Some('"') => state = State::Normal,
-                    Some(_) | None => return None,
+            State::Beginning => match iter.next() {
+                Some('"') => state = State::Normal,
+                Some(_) | None => return None,
+            },
+            State::Normal => match iter.next() {
+                Some('\\') => state = State::AfterBackslash,
+                Some('"') => state = State::Ending,
+                Some(chr) => {
+                    let mut utf8_buf = [0; 4];
+                    string.extend_from_slice(chr.encode_utf8(&mut utf8_buf).as_bytes());
                 }
-            }
-            State::Normal => {
-                match iter.next() {
-                    Some('\\') => state = State::AfterBackslash,
-                    Some('"') => state = State::Ending,
-                    Some(chr) => {
-                        let mut utf8_buf = [0; 4];
-                        string.extend_from_slice(chr.encode_utf8(&mut utf8_buf).as_bytes());
-                    }
-                    None => return None,
+                None => return None,
+            },
+            State::AfterBackslash => match iter.next() {
+                Some('t') => {
+                    string.push(b'\t');
+                    state = State::Normal;
                 }
-            }
-            State::AfterBackslash => {
-                match iter.next() {
-                    Some('t') => {
-                        string.push(b'\t');
-                        state = State::Normal;
-                    }
-                    Some('n') => {
-                        string.push(b'\n');
-                        state = State::Normal;
-                    }
-                    Some('r') => {
-                        string.push(b'\r');
-                        state = State::Normal;
-                    }
-                    Some('"') => {
-                        string.push(b'"');
-                        state = State::Normal;
-                    }
-                    Some('\\') => {
-                        string.push(b'\\');
-                        state = State::Normal;
-                    }
-                    Some('x') => {
-                        state = State::HexEscape1;
-                    }
-                    Some(_) | None => return None,
+                Some('n') => {
+                    string.push(b'\n');
+                    state = State::Normal;
                 }
-            }
-            State::HexEscape1 => {
-                match iter.next() {
-                    Some(chr) => {
-                        let hex1 = hex_digit_to_u8(chr)?;
-                        state = State::HexEscape2(hex1);
-                    }
-                    None => return None,
+                Some('r') => {
+                    string.push(b'\r');
+                    state = State::Normal;
                 }
-            }
-            State::HexEscape2(hex1) => {
-                match iter.next() {
-                    Some(chr) => {
-                        let hex2 = hex_digit_to_u8(chr)?;
-                        string.push((hex1 << 4) | hex2);
-                        state = State::Normal;
-                    }
-                    None => return None,
+                Some('"') => {
+                    string.push(b'"');
+                    state = State::Normal;
                 }
-            }
-            State::Ending => {
-                match iter.next() {
-                    None => return Some(string),
-                    _ => return None,
+                Some('\\') => {
+                    string.push(b'\\');
+                    state = State::Normal;
                 }
-            }
+                Some('x') => {
+                    state = State::HexEscape1;
+                }
+                Some(_) | None => return None,
+            },
+            State::HexEscape1 => match iter.next() {
+                Some(chr) => {
+                    let hex1 = hex_digit_to_u8(chr)?;
+                    state = State::HexEscape2(hex1);
+                }
+                None => return None,
+            },
+            State::HexEscape2(hex1) => match iter.next() {
+                Some(chr) => {
+                    let hex2 = hex_digit_to_u8(chr)?;
+                    string.push((hex1 << 4) | hex2);
+                    state = State::Normal;
+                }
+                None => return None,
+            },
+            State::Ending => match iter.next() {
+                None => return Some(string),
+                _ => return None,
+            },
         }
     }
 }
@@ -851,77 +842,65 @@ pub fn decode_ascii_string(atom: &str) -> Option<String> {
     let mut state = State::Beginning;
     loop {
         match state {
-            State::Beginning => {
-                match iter.next() {
-                    Some('"') => state = State::Normal,
-                    Some(_) | None => return None,
+            State::Beginning => match iter.next() {
+                Some('"') => state = State::Normal,
+                Some(_) | None => return None,
+            },
+            State::Normal => match iter.next() {
+                Some('\\') => state = State::AfterBackslash,
+                Some('"') => state = State::Ending,
+                Some(chr @ '\x00'..='\x7F') => string.push(chr),
+                Some(_) | None => return None,
+            },
+            State::AfterBackslash => match iter.next() {
+                Some('t') => {
+                    string.push('\t');
+                    state = State::Normal;
                 }
-            }
-            State::Normal => {
-                match iter.next() {
-                    Some('\\') => state = State::AfterBackslash,
-                    Some('"') => state = State::Ending,
-                    Some(chr @ '\x00' ..= '\x7F') => string.push(chr),
-                    Some(_) | None => return None,
+                Some('n') => {
+                    string.push('\n');
+                    state = State::Normal;
                 }
-            }
-            State::AfterBackslash => {
-                match iter.next() {
-                    Some('t') => {
-                        string.push('\t');
-                        state = State::Normal;
-                    }
-                    Some('n') => {
-                        string.push('\n');
-                        state = State::Normal;
-                    }
-                    Some('r') => {
-                        string.push('\r');
-                        state = State::Normal;
-                    }
-                    Some('"') => {
-                        string.push('"');
-                        state = State::Normal;
-                    }
-                    Some('\\') => {
-                        string.push('\\');
-                        state = State::Normal;
-                    }
-                    Some('x') => {
-                        state = State::HexEscape1;
-                    }
-                    Some(_) | None => return None,
+                Some('r') => {
+                    string.push('\r');
+                    state = State::Normal;
                 }
-            }
-            State::HexEscape1 => {
-                match iter.next() {
-                    Some(chr) => {
-                        let hex1 = hex_digit_to_u8(chr)?;
-                        state = State::HexEscape2(hex1);
+                Some('"') => {
+                    string.push('"');
+                    state = State::Normal;
+                }
+                Some('\\') => {
+                    string.push('\\');
+                    state = State::Normal;
+                }
+                Some('x') => {
+                    state = State::HexEscape1;
+                }
+                Some(_) | None => return None,
+            },
+            State::HexEscape1 => match iter.next() {
+                Some(chr) => {
+                    let hex1 = hex_digit_to_u8(chr)?;
+                    state = State::HexEscape2(hex1);
+                }
+                None => return None,
+            },
+            State::HexEscape2(hex1) => match iter.next() {
+                Some(chr) => {
+                    let hex2 = hex_digit_to_u8(chr)?;
+                    let chr = (hex1 << 4) | hex2;
+                    if chr > 0x7F {
+                        return None;
                     }
-                    None => return None,
+                    string.push(char::from(chr));
+                    state = State::Normal;
                 }
-            }
-            State::HexEscape2(hex1) => {
-                match iter.next() {
-                    Some(chr) => {
-                        let hex2 = hex_digit_to_u8(chr)?;
-                        let chr = (hex1 << 4) | hex2;
-                        if chr > 0x7F {
-                            return None;
-                        }
-                        string.push(char::from(chr));
-                        state = State::Normal;
-                    }
-                    None => return None,
-                }
-            }
-            State::Ending => {
-                match iter.next() {
-                    None => return Some(string),
-                    _ => return None,
-                }
-            }
+                None => return None,
+            },
+            State::Ending => match iter.next() {
+                None => return Some(string),
+                _ => return None,
+            },
         }
     }
 }
@@ -945,111 +924,93 @@ pub fn decode_utf8_string(atom: &str) -> Option<String> {
     let mut state = State::Beginning;
     loop {
         match state {
-            State::Beginning => {
-                match iter.next() {
-                    Some('"') => state = State::Normal,
-                    Some(_) | None => return None,
+            State::Beginning => match iter.next() {
+                Some('"') => state = State::Normal,
+                Some(_) | None => return None,
+            },
+            State::Normal => match iter.next() {
+                Some('\\') => state = State::AfterBackslash,
+                Some('"') => state = State::Ending,
+                Some(chr) => string.push(chr),
+                None => return None,
+            },
+            State::AfterBackslash => match iter.next() {
+                Some('t') => {
+                    string.push('\t');
+                    state = State::Normal;
                 }
-            }
-            State::Normal => {
-                match iter.next() {
-                    Some('\\') => state = State::AfterBackslash,
-                    Some('"') => state = State::Ending,
-                    Some(chr) => string.push(chr),
-                    None => return None,
+                Some('n') => {
+                    string.push('\n');
+                    state = State::Normal;
                 }
-            }
-            State::AfterBackslash => {
-                match iter.next() {
-                    Some('t') => {
-                        string.push('\t');
-                        state = State::Normal;
-                    }
-                    Some('n') => {
-                        string.push('\n');
-                        state = State::Normal;
-                    }
-                    Some('r') => {
-                        string.push('\r');
-                        state = State::Normal;
-                    }
-                    Some('"') => {
-                        string.push('"');
-                        state = State::Normal;
-                    }
-                    Some('\\') => {
-                        string.push('\\');
-                        state = State::Normal;
-                    }
-                    Some('x') => {
-                        state = State::HexEscape1;
-                    }
-                    Some('u') => {
-                        state = State::UnicodeEscape1;
-                    }
-                    Some(_) | None => return None,
+                Some('r') => {
+                    string.push('\r');
+                    state = State::Normal;
                 }
-            }
-            State::HexEscape1 => {
-                match iter.next() {
-                    Some(chr) => {
-                        let hex1 = hex_digit_to_u8(chr)?;
-                        state = State::HexEscape2(hex1);
+                Some('"') => {
+                    string.push('"');
+                    state = State::Normal;
+                }
+                Some('\\') => {
+                    string.push('\\');
+                    state = State::Normal;
+                }
+                Some('x') => {
+                    state = State::HexEscape1;
+                }
+                Some('u') => {
+                    state = State::UnicodeEscape1;
+                }
+                Some(_) | None => return None,
+            },
+            State::HexEscape1 => match iter.next() {
+                Some(chr) => {
+                    let hex1 = hex_digit_to_u8(chr)?;
+                    state = State::HexEscape2(hex1);
+                }
+                None => return None,
+            },
+            State::HexEscape2(hex1) => match iter.next() {
+                Some(chr) => {
+                    let hex2 = hex_digit_to_u8(chr)?;
+                    let chr = (hex1 << 4) | hex2;
+                    if chr > 0x7F {
+                        return None;
                     }
-                    None => return None,
+                    string.push(char::from(chr));
+                    state = State::Normal;
                 }
-            }
-            State::HexEscape2(hex1) => {
-                match iter.next() {
-                    Some(chr) => {
-                        let hex2 = hex_digit_to_u8(chr)?;
-                        let chr = (hex1 << 4) | hex2;
-                        if chr > 0x7F {
-                            return None;
-                        }
-                        string.push(char::from(chr));
-                        state = State::Normal;
+                None => return None,
+            },
+            State::UnicodeEscape1 => match iter.next() {
+                Some('{') => state = State::UnicodeEscape2,
+                Some(_) | None => return None,
+            },
+            State::UnicodeEscape2 => match iter.next() {
+                Some(chr) => {
+                    let hex1 = hex_digit_to_u8(chr)?;
+                    state = State::UnicodeEscape3(u32::from(hex1));
+                }
+                None => return None,
+            },
+            State::UnicodeEscape3(current_hex) => match iter.next() {
+                Some('}') => {
+                    string.push(std::char::from_u32(current_hex)?);
+                    state = State::Normal;
+                }
+                Some(chr) => {
+                    if current_hex >= 0x1000_0000 {
+                        return None;
                     }
-                    None => return None,
+                    let new_digit = u32::from(hex_digit_to_u8(chr)?);
+                    state = State::UnicodeEscape3((current_hex << 4) | new_digit);
                 }
-            }
-            State::UnicodeEscape1 => {
-                match iter.next() {
-                    Some('{') => state = State::UnicodeEscape2,
-                    Some(_) | None => return None,
-                }
-            }
-            State::UnicodeEscape2 => {
-                match iter.next() {
-                    Some(chr) => {
-                        let hex1 = hex_digit_to_u8(chr)?;
-                        state = State::UnicodeEscape3(u32::from(hex1));
-                    }
-                    None => return None,
-                }
-            }
-            State::UnicodeEscape3(current_hex) => {
-                match iter.next() {
-                    Some('}') => {
-                        string.push(std::char::from_u32(current_hex)?);
-                        state = State::Normal;
-                    }
-                    Some(chr) => {
-                        if current_hex >= 0x1000_0000 {
-                            return None;
-                        }
-                        let new_digit = u32::from(hex_digit_to_u8(chr)?);
-                        state = State::UnicodeEscape3((current_hex << 4) | new_digit);
-                    }
-                    None => return None,
-                }
-            }
-            State::Ending => {
-                match iter.next() {
-                    None => return Some(string),
-                    _ => return None,
-                }
-            }
+                None => return None,
+            },
+            State::Ending => match iter.next() {
+                None => return Some(string),
+                _ => return None,
+            },
         }
     }
 }
