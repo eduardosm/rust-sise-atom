@@ -219,9 +219,8 @@ fn encode_float_generic(
                         output.push(char::from(chr));
                     }
                 }
-            } else
-            /*if exp>0*/
-            {
+            } else {
+                /*if exp>0*/
                 let exp = exp as usize;
                 if exp >= digits {
                     if exp > ZEROS_THRESHOLD as usize {
@@ -245,9 +244,8 @@ fn encode_float_generic(
                         }
                         output.push_str(".0");
                     }
-                } else
-                /*if exp < digits*/
-                {
+                } else {
+                    /*if exp < digits*/
                     for &chr in buf[0..exp].iter() {
                         output.push(char::from(chr));
                     }
