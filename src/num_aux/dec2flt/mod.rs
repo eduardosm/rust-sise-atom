@@ -77,18 +77,16 @@
 //! Larger exponents are accepted, but we don't do arithmetic with them, they are immediately
 //! turned into {positive,negative} {zero,infinity}.
 
-use std::fmt;
-
-use self::parse::{Decimal};
 use self::num::digits_to_big;
+use self::parse::{Decimal};
 use self::rawfp::RawFloat;
 
 mod algorithm;
-mod table;
 mod num;
+mod table;
 // These two have their own tests.
-pub mod rawfp;
 pub mod parse;
+pub mod rawfp;
 
 /// An error which can be returned when parsing a float.
 ///
@@ -100,26 +98,12 @@ pub mod parse;
 /// [`f64`]: ../../std/primitive.f64.html
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ParseFloatError {
-    kind: FloatErrorKind
+    kind: FloatErrorKind,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum FloatErrorKind {
     Invalid,
-}
-
-impl ParseFloatError {
-    pub fn __description(&self) -> &str {
-        match self.kind {
-            FloatErrorKind::Invalid => "invalid float literal",
-        }
-    }
-}
-
-impl fmt::Display for ParseFloatError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.__description().fmt(f)
-    }
 }
 
 fn pfe_invalid() -> ParseFloatError {
@@ -135,6 +119,10 @@ pub(crate) fn convert<T: RawFloat>(mut decimal: Decimal<'_>) -> Result<T, ParseF
     }
     // Remove/shift out the decimal point.
     let e = decimal.exp - decimal.fractional.len() as i64;
+    // Do not use `fast_path` because it needs the unstable `asm!` macro.
+    /*if let Some(x) = algorithm::fast_path(decimal.integral, decimal.fractional, e) {
+        return Ok(x);
+    }*/
     // Big32x40 is limited to 1280 bits, which translates to about 385 decimal digits.
     // If we exceed this, we'll crash, so we error out before getting too close (within 10^10).
     let upper_bound = bound_intermediate_digits(&decimal, e);

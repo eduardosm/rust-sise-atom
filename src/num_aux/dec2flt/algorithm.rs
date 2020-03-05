@@ -1,11 +1,11 @@
 //! The various algorithms from the paper.
 
 use std::cmp::min;
-use std::cmp::Ordering::{Less, Equal, Greater};
-use crate::num_aux::diy_float::Fp;
-use crate::num_aux::dec2flt::table;
-use crate::num_aux::dec2flt::rawfp::{self, Unpacked, RawFloat, fp_to_float, next_float, prev_float};
+use std::cmp::Ordering::{Equal, Greater, Less};
 use crate::num_aux::dec2flt::num::{self, Big};
+use crate::num_aux::dec2flt::rawfp::{self, fp_to_float, next_float, prev_float, RawFloat, Unpacked};
+use crate::num_aux::dec2flt::table;
+use crate::num_aux::diy_float::Fp;
 
 /// Number of significand bits in Fp
 const P: u32 = 64;

@@ -2,7 +2,6 @@
 
 // This module is only for dec2flt and flt2dec, and only public because of coretests.
 // It is not intended to ever be stabilized.
-#![doc(hidden)]
 
 /// A custom 64-bit floating point type, representing `f * 2^e`.
 #[derive(Copy, Clone, Debug)]
@@ -71,9 +70,6 @@ impl Fp {
         assert!(edelta >= 0);
         let edelta = edelta as usize;
         assert_eq!(self.f << edelta >> edelta, self.f);
-        Fp {
-            f: self.f << edelta,
-            e,
-        }
+        Fp { f: self.f << edelta, e }
     }
 }

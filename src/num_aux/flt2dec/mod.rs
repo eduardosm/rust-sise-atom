@@ -113,10 +113,13 @@ functions.
 
 */
 
-pub use self::decoder::{decode, DecodableFloat, FullDecoded, Decoded};
+// while this is extensively documented, this is in principle private which is
+// only made public for testing. do not expose us.
 
-pub mod estimator;
+pub use self::decoder::{decode, DecodableFloat, Decoded, FullDecoded};
+
 pub mod decoder;
+pub mod estimator;
 
 /// Digit-generation algorithms.
 pub mod strategy {
@@ -136,17 +139,24 @@ pub const MAX_SIG_DIGITS: usize = 17;
 #[doc(hidden)]
 pub fn round_up(d: &mut [u8], n: usize) -> Option<u8> {
     match d[..n].iter().rposition(|&c| c != b'9') {
-        Some(i) => { // d[i+1..n] is all nines
+        Some(i) => {
+            // d[i+1..n] is all nines
             d[i] += 1;
-            for j in i+1..n { d[j] = b'0'; }
+            for j in i + 1..n {
+                d[j] = b'0';
+            }
             None
         }
-        None if n > 0 => { // 999..999 rounds to 1000..000 with an increased exponent
+        None if n > 0 => {
+            // 999..999 rounds to 1000..000 with an increased exponent
             d[0] = b'1';
-            for j in 1..n { d[j] = b'0'; }
+            for j in 1..n {
+                d[j] = b'0';
+            }
             Some(b'0')
         }
-        None => { // an empty buffer rounds up (a bit strange but reasonable)
+        None => {
+            // an empty buffer rounds up (a bit strange but reasonable)
             Some(b'1')
         }
     }
