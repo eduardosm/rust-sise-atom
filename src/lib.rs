@@ -5,12 +5,12 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-#![deny(rust_2018_idioms)]
+#![deny(rust_2018_idioms, unreachable_pub)]
 
 #[cfg(test)]
 mod tests;
 
-#[allow(clippy::all)]
+#[allow(clippy::all, unreachable_pub)]
 #[rustfmt::skip]
 mod num_aux;
 
