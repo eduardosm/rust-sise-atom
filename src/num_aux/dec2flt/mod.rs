@@ -78,7 +78,7 @@
 //! turned into {positive,negative} {zero,infinity}.
 
 use self::num::digits_to_big;
-use self::parse::{Decimal};
+use self::parse::Decimal;
 use self::rawfp::RawFloat;
 
 mod algorithm;

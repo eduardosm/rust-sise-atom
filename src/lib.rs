@@ -12,12 +12,21 @@
 //!
 //! The minimum Rust version required by this crate is 1.36.
 
-#![deny(rust_2018_idioms, unreachable_pub)]
+#![deny(
+    rust_2018_idioms,
+    trivial_casts,
+    trivial_numeric_casts,
+    unreachable_pub,
+    unsafe_code,
+    unused_import_braces,
+    unused_must_use,
+    unused_qualifications
+)]
 
 #[cfg(test)]
 mod tests;
 
-#[allow(clippy::all, unreachable_pub)]
+#[allow(clippy::all, unreachable_pub, unused_qualifications)]
 #[rustfmt::skip]
 mod num_aux;
 
@@ -44,6 +53,7 @@ macro_rules! encode_signed_int {
         };
         let digits_beginning = $output.len();
         loop {
+            #[allow(trivial_numeric_casts)]
             let current_digit = (remaining_digits % 10) as u8;
             remaining_digits /= 10;
             $output.insert(digits_beginning, char::from(current_digit + b'0'));
@@ -114,6 +124,7 @@ macro_rules! encode_unsigned_int {
         let mut remaining_digits: $uint = $value;
         let digits_beginning = $output.len();
         loop {
+            #[allow(trivial_numeric_casts)]
             let current_digit = (remaining_digits % 10) as u8;
             remaining_digits /= 10;
             $output.insert(digits_beginning, char::from(current_digit + b'0'));
