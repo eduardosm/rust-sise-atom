@@ -7,9 +7,9 @@
 
 //! This crate provides auxiliary functions used to encode and decode
 //! S-expression atom values.
-//! 
+//!
 //! # Minimum Rust version
-//! 
+//!
 //! The minimum Rust version required by this crate is 1.36.
 
 #![deny(rust_2018_idioms, unreachable_pub)]
