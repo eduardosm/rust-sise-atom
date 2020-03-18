@@ -5,6 +5,13 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
+//! This crate provides auxiliary functions used to encode and decode
+//! S-expression atom values.
+//! 
+//! # Minimum Rust version
+//! 
+//! The minimum Rust version required by this crate is 1.36.
+
 #![deny(rust_2018_idioms, unreachable_pub)]
 
 #[cfg(test)]
