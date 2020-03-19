@@ -133,7 +133,7 @@ fn test_encode_f32() {
     assert_eq!(crate::encode_f32(0.00001), "0.00001");
     assert_eq!(crate::encode_f32(10.1), "10.1");
     assert_eq!(crate::encode_f32(10.101), "10.101");
-    assert_eq!(crate::encode_f32(10.101), "10.101");
+    assert_eq!(crate::encode_f32(10.1001), "10.1001");
     assert_eq!(crate::encode_f32(3.402823e38), "3.402823e38");
     assert_eq!(crate::encode_f32(1.175494e-38), "1.175494e-38");
 }
