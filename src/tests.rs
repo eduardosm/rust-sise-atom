@@ -189,7 +189,8 @@ fn test_encode_byte_string() {
     assert_eq!(crate::encode_byte_string(b" \n "), r#"" \n ""#);
     assert_eq!(crate::encode_byte_string(b" \" "), r#"" \" ""#);
     assert_eq!(crate::encode_byte_string(b" \\ "), r#"" \\ ""#);
-    assert_eq!(crate::encode_byte_string(b" \x00 "), r#"" \x00 ""#);
+    assert_eq!(crate::encode_byte_string(b" \0 "), r#"" \0 ""#);
+    assert_eq!(crate::encode_byte_string(b" \x01 "), r#"" \x01 ""#);
     assert_eq!(crate::encode_byte_string(b" \xFF "), r#"" \xff ""#);
 }
 
@@ -201,7 +202,8 @@ fn test_encode_ascii_string() {
     assert_eq!(crate::encode_ascii_string(" \n "), r#"" \n ""#);
     assert_eq!(crate::encode_ascii_string(" \" "), r#"" \" ""#);
     assert_eq!(crate::encode_ascii_string(" \\ "), r#"" \\ ""#);
-    assert_eq!(crate::encode_ascii_string(" \x00 "), r#"" \x00 ""#);
+    assert_eq!(crate::encode_ascii_string(" \0 "), r#"" \0 ""#);
+    assert_eq!(crate::encode_ascii_string(" \x01 "), r#"" \x01 ""#);
     assert_eq!(crate::encode_ascii_string(" \x7F "), r#"" \x7f ""#);
 }
 
@@ -213,7 +215,8 @@ fn test_encode_utf8_string() {
     assert_eq!(crate::encode_utf8_string(" \n "), r#"" \n ""#);
     assert_eq!(crate::encode_utf8_string(" \" "), r#"" \" ""#);
     assert_eq!(crate::encode_utf8_string(" \\ "), r#"" \\ ""#);
-    assert_eq!(crate::encode_utf8_string(" \x00 "), r#"" \u{0} ""#);
+    assert_eq!(crate::encode_utf8_string(" \0 "), r#"" \0 ""#);
+    assert_eq!(crate::encode_utf8_string(" \x01 "), r#"" \u{1} ""#);
     assert_eq!(crate::encode_utf8_string(" \x7F "), r#"" \u{7f} ""#);
     assert_eq!(crate::encode_utf8_string(" \u{FFFD} "), r#"" \u{fffd} ""#);
 }
@@ -610,12 +613,12 @@ fn test_decode_byte_string() {
     assert_eq!(crate::decode_byte_string(r#"" \\ ""#).unwrap(), b" \\ ");
     assert_eq!(crate::decode_byte_string(r#"" \" ""#).unwrap(), b" \" ");
     assert_eq!(
-        crate::decode_byte_string(r#"" \r\n\t ""#).unwrap(),
-        b" \r\n\t "
+        crate::decode_byte_string(r#"" \0\r\n\t ""#).unwrap(),
+        b" \0\r\n\t "
     );
     assert_eq!(
-        crate::decode_byte_string(r#"" \x00\xFF ""#).unwrap(),
-        b" \x00\xFF "
+        crate::decode_byte_string(r#"" \x01\xFF ""#).unwrap(),
+        b" \x01\xFF "
     );
     assert_eq!(
         crate::decode_byte_string(r#"" \xaB\xCd ""#).unwrap(),
@@ -638,12 +641,12 @@ fn test_decode_ascii_string() {
     assert_eq!(crate::decode_ascii_string(r#"" \\ ""#).unwrap(), " \\ ");
     assert_eq!(crate::decode_ascii_string(r#"" \" ""#).unwrap(), " \" ");
     assert_eq!(
-        crate::decode_ascii_string(r#"" \r\n\t ""#).unwrap(),
-        " \r\n\t "
+        crate::decode_ascii_string(r#"" \0\r\n\t ""#).unwrap(),
+        " \0\r\n\t "
     );
     assert_eq!(
-        crate::decode_ascii_string(r#"" \x00\x7F ""#).unwrap(),
-        " \x00\x7F "
+        crate::decode_ascii_string(r#"" \x01\x7F ""#).unwrap(),
+        " \x01\x7F "
     );
     assert_eq!(
         crate::decode_ascii_string(r#"" \x1B\x1d ""#).unwrap(),
@@ -668,12 +671,12 @@ fn test_decode_utf8_string() {
     assert_eq!(crate::decode_utf8_string(r#"" \\ ""#).unwrap(), " \\ ");
     assert_eq!(crate::decode_utf8_string(r#"" \" ""#).unwrap(), " \" ");
     assert_eq!(
-        crate::decode_utf8_string(r#"" \r\n\t ""#).unwrap(),
-        " \r\n\t "
+        crate::decode_utf8_string(r#"" \0\r\n\t ""#).unwrap(),
+        " \0\r\n\t "
     );
     assert_eq!(
-        crate::decode_utf8_string(r#"" \x00\x7F ""#).unwrap(),
-        " \x00\x7F "
+        crate::decode_utf8_string(r#"" \x01\x7F ""#).unwrap(),
+        " \x01\x7F "
     );
     assert_eq!(
         crate::decode_utf8_string(r#"" \x1B\x1d ""#).unwrap(),

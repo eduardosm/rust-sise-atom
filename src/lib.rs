@@ -302,6 +302,7 @@ pub fn encode_byte_string_into(string: &[u8], output: &mut String) {
     for &chr in string {
         #[allow(clippy::match_overlapping_arm)]
         match chr {
+            b'\0' => output.push_str("\\0"),
             b'\t' => output.push_str("\\t"),
             b'\n' => output.push_str("\\n"),
             b'\r' => output.push_str("\\r"),
@@ -330,6 +331,7 @@ pub fn encode_ascii_string_into(string: &str, output: &mut String) {
     for &chr in string.as_bytes() {
         #[allow(clippy::match_overlapping_arm)]
         match chr {
+            b'\0' => output.push_str("\\0"),
             b'\t' => output.push_str("\\t"),
             b'\n' => output.push_str("\\n"),
             b'\r' => output.push_str("\\r"),
@@ -358,6 +360,7 @@ pub fn encode_utf8_string_into(string: &str, output: &mut String) {
     output.push('"');
     for chr in string.chars() {
         match chr {
+            '\0' => output.push_str("\\0"),
             '\t' => output.push_str("\\t"),
             '\n' => output.push_str("\\n"),
             '\r' => output.push_str("\\r"),
@@ -782,6 +785,10 @@ pub fn decode_byte_string(atom: &str) -> Option<Vec<u8>> {
                 None => return None,
             },
             State::AfterBackslash => match iter.next() {
+                Some('0') => {
+                    string.push(b'\0');
+                    state = State::Normal;
+                }
                 Some('t') => {
                     string.push(b'\t');
                     state = State::Normal;
@@ -857,6 +864,10 @@ pub fn decode_ascii_string(atom: &str) -> Option<String> {
                 Some(_) | None => return None,
             },
             State::AfterBackslash => match iter.next() {
+                Some('0') => {
+                    string.push('\0');
+                    state = State::Normal;
+                }
                 Some('t') => {
                     string.push('\t');
                     state = State::Normal;
@@ -939,6 +950,10 @@ pub fn decode_utf8_string(atom: &str) -> Option<String> {
                 None => return None,
             },
             State::AfterBackslash => match iter.next() {
+                Some('0') => {
+                    string.push('\0');
+                    state = State::Normal;
+                }
                 Some('t') => {
                     string.push('\t');
                     state = State::Normal;
