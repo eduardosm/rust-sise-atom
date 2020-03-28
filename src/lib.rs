@@ -545,24 +545,6 @@ pub fn decode_u128(atom: &str) -> Option<u128> {
     decode_unsigned_int!(u128, atom)
 }
 
-trait Float: Copy {
-    fn is_finite(&self) -> bool;
-}
-
-impl Float for f64 {
-    #[inline]
-    fn is_finite(&self) -> bool {
-        f64::is_finite(*self)
-    }
-}
-
-impl Float for f32 {
-    #[inline]
-    fn is_finite(&self) -> bool {
-        f32::is_finite(*self)
-    }
-}
-
 enum PreParsedFloat<'a> {
     NaN,
     Inf(bool),
