@@ -12,3 +12,4 @@ publish = false
 travis-ci = { repository = "eduardosm/rust-sise-atom" }
 
 [dependencies]
+flt2dec2flt = "0.1.0"

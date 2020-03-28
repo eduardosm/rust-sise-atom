@@ -22,12 +22,10 @@
 )]
 #![forbid(unsafe_code)]
 
+use flt2dec2flt::FloatExt as _;
+
 #[cfg(test)]
 mod tests;
-
-#[allow(clippy::all, unreachable_pub, unused_qualifications)]
-#[rustfmt::skip]
-mod num_aux;
 
 // Encode
 /// Returns `"true"` if `value` is `true`,
@@ -189,37 +187,26 @@ pub fn encode_u128(value: u128) -> String {
     output
 }
 
-fn encode_float_generic(
-    sign: bool,
-    full_decoded: num_aux::flt2dec::decoder::FullDecoded,
-    output: &mut String,
-) {
-    match full_decoded {
-        num_aux::flt2dec::decoder::FullDecoded::Nan => {
-            output.push_str("NaN");
-        }
-        num_aux::flt2dec::decoder::FullDecoded::Infinite => {
-            output.push_str(if sign { "-inf" } else { "inf" });
-        }
-        num_aux::flt2dec::decoder::FullDecoded::Zero => {
-            output.push_str("0.0");
-        }
-        num_aux::flt2dec::decoder::FullDecoded::Finite(ref decoded) => {
+fn postformat_float(preformatted: flt2dec2flt::PreFormatted<'_>, output: &mut String) {
+    match preformatted {
+        flt2dec2flt::PreFormatted::NaN => output.push_str("NaN"),
+        flt2dec2flt::PreFormatted::Inf(false) => output.push_str("inf"),
+        flt2dec2flt::PreFormatted::Inf(true) => output.push_str("-inf"),
+        flt2dec2flt::PreFormatted::Zero(false) => output.push_str("0.0"),
+        flt2dec2flt::PreFormatted::Zero(true) => output.push_str("-0.0"),
+        flt2dec2flt::PreFormatted::Finite(sign, digits, exp) => {
             if sign {
                 output.push('-');
             }
 
             const ZEROS_THRESHOLD: u16 = 9;
-            let mut buf = [0u8; num_aux::flt2dec::MAX_SIG_DIGITS];
-            let (digits, exp) =
-                num_aux::flt2dec::strategy::grisu::format_shortest(decoded, &mut buf);
             if exp <= 0 {
                 let exp = (-exp) as u16;
                 if exp > ZEROS_THRESHOLD {
-                    output.push(char::from(buf[0]));
+                    output.push(char::from(digits[0]));
                     output.push('.');
-                    if digits > 1 {
-                        for &chr in buf[1..digits].iter() {
+                    if digits.len() > 1 {
+                        for &chr in digits[1..].iter() {
                             output.push(char::from(chr));
                         }
                     } else {
@@ -232,19 +219,19 @@ fn encode_float_generic(
                     for _ in 0..exp {
                         output.push('0');
                     }
-                    for &chr in buf[0..digits].iter() {
+                    for &chr in digits.iter() {
                         output.push(char::from(chr));
                     }
                 }
             } else {
                 /*if exp>0*/
                 let exp = exp as usize;
-                if exp >= digits {
+                if exp >= digits.len() {
                     if exp > ZEROS_THRESHOLD as usize {
-                        output.push(char::from(buf[0]));
+                        output.push(char::from(digits[0]));
                         output.push('.');
-                        if digits > 1 {
-                            for &chr in buf[1..digits].iter() {
+                        if digits.len() > 1 {
+                            for &chr in digits[1..].iter() {
                                 output.push(char::from(chr));
                             }
                         } else {
@@ -253,21 +240,21 @@ fn encode_float_generic(
                         output.push('e');
                         encode_u32_into((exp - 1) as u32, output);
                     } else {
-                        for &chr in buf[0..digits].iter() {
+                        for &chr in digits.iter() {
                             output.push(char::from(chr));
                         }
-                        for _ in 0..(exp - digits) {
+                        for _ in 0..(exp - digits.len()) {
                             output.push('0');
                         }
                         output.push_str(".0");
                     }
                 } else {
                     /*if exp < digits*/
-                    for &chr in buf[0..exp].iter() {
+                    for &chr in digits[..exp].iter() {
                         output.push(char::from(chr));
                     }
                     output.push('.');
-                    for &chr in buf[exp..digits].iter() {
+                    for &chr in digits[exp..].iter() {
                         output.push(char::from(chr));
                     }
                 }
@@ -277,8 +264,9 @@ fn encode_float_generic(
 }
 
 pub fn encode_f32_into(value: f32, output: &mut String) {
-    let (sign, full_decoded) = num_aux::flt2dec::decoder::decode(value);
-    encode_float_generic(sign, full_decoded, output);
+    let mut buf = [0; flt2dec2flt::PREFORMAT_SHORTEST_BUF_LEN];
+    let preformatted = value.preformat_shortest(&mut buf);
+    postformat_float(preformatted, output);
 }
 
 #[inline]
@@ -289,8 +277,9 @@ pub fn encode_f32(value: f32) -> String {
 }
 
 pub fn encode_f64_into(value: f64, output: &mut String) {
-    let (sign, full_decoded) = num_aux::flt2dec::decoder::decode(value);
-    encode_float_generic(sign, full_decoded, output);
+    let mut buf = [0; flt2dec2flt::PREFORMAT_SHORTEST_BUF_LEN];
+    let preformatted = value.preformat_shortest(&mut buf);
+    postformat_float(preformatted, output);
 }
 
 #[inline]
@@ -554,14 +543,10 @@ pub fn decode_u128(atom: &str) -> Option<u128> {
 }
 
 trait Float: Copy {
-    const NEG_INFINITY: Self;
-
     fn is_finite(&self) -> bool;
 }
 
 impl Float for f64 {
-    const NEG_INFINITY: f64 = std::f64::NEG_INFINITY;
-
     #[inline]
     fn is_finite(&self) -> bool {
         f64::is_finite(*self)
@@ -569,22 +554,24 @@ impl Float for f64 {
 }
 
 impl Float for f32 {
-    const NEG_INFINITY: f32 = std::f32::NEG_INFINITY;
-
     #[inline]
     fn is_finite(&self) -> bool {
         f32::is_finite(*self)
     }
 }
 
-fn decode_float_generic<T>(atom: &str) -> Option<T>
-where
-    T: num_aux::dec2flt::rawfp::RawFloat + Float,
-{
+enum PreParsedFloat<'a> {
+    NaN,
+    Inf(bool),
+    Zero(bool),
+    Finite(flt2dec2flt::PreParsed<'a>),
+}
+
+fn preparse_float(atom: &str) -> Option<PreParsedFloat<'_>> {
     match atom {
-        "NaN" => return Some(T::NAN),
-        "inf" | "+inf" => return Some(T::INFINITY),
-        "-inf" => return Some(T::NEG_INFINITY),
+        "NaN" => return Some(PreParsedFloat::NaN),
+        "inf" | "+inf" => return Some(PreParsedFloat::Inf(false)),
+        "-inf" => return Some(PreParsedFloat::Inf(true)),
         _ => {}
     }
 
@@ -606,96 +593,94 @@ where
     let mut frac_begin: usize = 0;
     let mut frac_len: usize = 0;
     let mut frac_is_zero = true;
-    let mut exp_abs: u64 = 0;
+    let mut exp_abs: u16 = 0;
     let mut exp_sign = false;
 
-    let mut iter = atom.chars();
+    let atom = atom.as_bytes();
+    let mut iter = atom.iter().copied();
     let mut state = State::Beginning;
     let mut i = 0;
     loop {
         match state {
             State::Beginning => match iter.next() {
-                Some('-') => {
+                Some(b'-') => {
                     sign = true;
                     state = State::AfterSign;
                 }
-                Some('+') => state = State::AfterSign,
-                Some(chr @ '0'..='9') => {
+                Some(b'+') => state = State::AfterSign,
+                Some(chr @ b'0'..=b'9') => {
                     int_begin = i;
                     int_len = 1;
-                    int_is_zero &= chr == '0';
+                    int_is_zero &= chr == b'0';
                     state = State::IntegerDigits;
                 }
-                Some('.') => state = State::AfterDot,
+                Some(b'.') => state = State::AfterDot,
                 Some(_) | None => return None,
             },
             State::AfterSign => match iter.next() {
-                Some(chr @ '0'..='9') => {
+                Some(chr @ b'0'..=b'9') => {
                     int_begin = i;
                     int_len = 1;
-                    int_is_zero &= chr == '0';
+                    int_is_zero &= chr == b'0';
                     state = State::IntegerDigits;
                 }
-                Some('.') => state = State::AfterDot,
+                Some(b'.') => state = State::AfterDot,
                 Some(_) | None => return None,
             },
             State::IntegerDigits => match iter.next() {
-                Some(chr @ '0'..='9') => {
+                Some(chr @ b'0'..=b'9') => {
                     int_len += 1;
-                    int_is_zero &= chr == '0';
+                    int_is_zero &= chr == b'0';
                 }
-                Some('.') => state = State::AfterDot,
-                Some('e') | Some('E') => state = State::ExponentBeginning,
+                Some(b'.') => state = State::AfterDot,
+                Some(b'e') | Some(b'E') => state = State::ExponentBeginning,
                 Some(_) => return None,
                 None => break,
             },
             State::AfterDot => match iter.next() {
-                Some(chr @ '0'..='9') => {
+                Some(chr @ b'0'..=b'9') => {
                     frac_begin = i;
                     frac_len = 1;
-                    frac_is_zero &= chr == '0';
+                    frac_is_zero &= chr == b'0';
                     state = State::FractionalDigits;
                 }
-                Some('e') | Some('E') => state = State::ExponentBeginning,
+                Some(b'e') | Some(b'E') => state = State::ExponentBeginning,
                 Some(_) => return None,
                 None => break,
             },
             State::FractionalDigits => match iter.next() {
-                Some(chr @ '0'..='9') => {
+                Some(chr @ b'0'..=b'9') => {
                     frac_len += 1;
-                    frac_is_zero &= chr == '0';
+                    frac_is_zero &= chr == b'0';
                 }
-                Some('e') | Some('E') => state = State::ExponentBeginning,
+                Some(b'e') | Some(b'E') => state = State::ExponentBeginning,
                 Some(_) => return None,
                 None => break,
             },
             State::ExponentBeginning => match iter.next() {
-                Some('-') => {
+                Some(b'-') => {
                     exp_sign = true;
                     state = State::AfterExponentSign;
                 }
-                Some('+') => state = State::AfterExponentSign,
-                Some(chr @ '0'..='9') => {
-                    exp_abs = u64::from(chr as u8 - b'0');
+                Some(b'+') => state = State::AfterExponentSign,
+                Some(chr @ b'0'..=b'9') => {
+                    exp_abs = u16::from(chr - b'0');
                     state = State::ExponentDigits;
                 }
                 Some(_) | None => return None,
             },
             State::AfterExponentSign => match iter.next() {
-                Some(chr @ '0'..='9') => {
-                    exp_abs = u64::from(chr as u8 - b'0');
+                Some(chr @ b'0'..=b'9') => {
+                    exp_abs = u16::from(chr - b'0');
                     state = State::ExponentDigits;
                 }
                 Some(_) | None => return None,
             },
             State::ExponentDigits => match iter.next() {
-                Some(chr @ '0'..='9') => {
-                    if exp_abs != u64::max_value() {
-                        exp_abs = exp_abs
-                            .checked_mul(10)
-                            .and_then(|x| x.checked_add(u64::from(chr as u8 - b'0')))
-                            .unwrap_or(u64::max_value());
-                    }
+                Some(chr @ b'0'..=b'9') => {
+                    exp_abs = exp_abs
+                        .saturating_mul(10)
+                        .saturating_add(u16::from(chr - b'0'))
                 }
                 Some(_) => return None,
                 None => break,
@@ -707,48 +692,52 @@ where
     if int_is_zero && frac_is_zero {
         if int_len == 0 && frac_len == 0 {
             // Don't allow dots without digits (., .e10)
-            None
+            return None;
         } else {
-            Some(T::ZERO)
-        }
-    } else {
-        // Less than 18 digits
-        if exp_abs > 99_999_999_999_999_999 {
-            if exp_sign {
-                Some(T::ZERO)
-            } else {
-                None
-            }
-        } else {
-            let atom = atom.as_bytes();
-            let integral = &atom[int_begin..(int_begin + int_len)];
-            let fractional = &atom[frac_begin..(frac_begin + frac_len)];
-            let exp = if exp_sign {
-                -(exp_abs as i64)
-            } else {
-                exp_abs as i64
-            };
-
-            let parsed_dec = num_aux::dec2flt::parse::Decimal::new(integral, fractional, exp);
-            num_aux::dec2flt::convert::<T>(parsed_dec)
-                .ok()
-                .and_then(|r| {
-                    if r.is_finite() {
-                        Some(if sign { -r } else { r })
-                    } else {
-                        None
-                    }
-                })
+            return Some(PreParsedFloat::Zero(sign));
         }
     }
+
+    let exp = if exp_sign {
+        if exp_abs > (i16::min_value() as u16) {
+            return Some(PreParsedFloat::Zero(sign));
+        } else {
+            exp_abs.wrapping_neg() as i16
+        }
+    } else if exp_abs > (i16::max_value() as u16) {
+        return Some(PreParsedFloat::Inf(sign));
+    } else {
+        exp_abs as i16
+    };
+
+    Some(PreParsedFloat::Finite(flt2dec2flt::PreParsed {
+        sign,
+        int_digits: &atom[int_begin..(int_begin + int_len)],
+        frac_digits: &atom[frac_begin..(frac_begin + frac_len)],
+        exp,
+    }))
 }
 
 pub fn decode_f32(atom: &str) -> Option<f32> {
-    decode_float_generic::<f32>(atom)
+    match preparse_float(atom)? {
+        PreParsedFloat::NaN => Some(std::f32::NAN),
+        PreParsedFloat::Inf(false) => Some(std::f32::INFINITY),
+        PreParsedFloat::Inf(true) => Some(std::f32::NEG_INFINITY),
+        PreParsedFloat::Zero(false) => Some(0.0),
+        PreParsedFloat::Zero(true) => Some(-0.0),
+        PreParsedFloat::Finite(preparsed) => f32::from_preparsed(preparsed),
+    }
 }
 
 pub fn decode_f64(atom: &str) -> Option<f64> {
-    decode_float_generic::<f64>(atom)
+    match preparse_float(atom)? {
+        PreParsedFloat::NaN => Some(std::f64::NAN),
+        PreParsedFloat::Inf(false) => Some(std::f64::INFINITY),
+        PreParsedFloat::Inf(true) => Some(std::f64::NEG_INFINITY),
+        PreParsedFloat::Zero(false) => Some(0.0),
+        PreParsedFloat::Zero(true) => Some(-0.0),
+        PreParsedFloat::Finite(preparsed) => f64::from_preparsed(preparsed),
+    }
 }
 
 fn hex_digit_to_u8(chr: char) -> Option<u8> {

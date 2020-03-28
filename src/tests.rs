@@ -466,10 +466,22 @@ fn test_decode_f32() {
     ));
 
     assert_eq!(crate::decode_f32("0e99999999999999999"), Some(0.0));
+    assert_eq!(
+        crate::decode_f32("1e99999999999999999"),
+        Some(std::f32::INFINITY)
+    );
+    assert_eq!(
+        crate::decode_f32("-1e99999999999999999"),
+        Some(std::f32::NEG_INFINITY)
+    );
     assert_eq!(crate::decode_f32("1e-99999999999999999"), Some(0.0));
     assert_eq!(
         crate::decode_f32("0e9999999999999999999999999999999999"),
         Some(0.0)
+    );
+    assert_eq!(
+        crate::decode_f32("1e9999999999999999999999999999999999"),
+        Some(std::f32::INFINITY)
     );
     assert_eq!(
         crate::decode_f32("1e-9999999999999999999999999999999999"),
@@ -486,11 +498,6 @@ fn test_decode_f32() {
     assert_eq!(crate::decode_f32("+E1"), None);
     assert_eq!(crate::decode_f32("-e1"), None);
     assert_eq!(crate::decode_f32("-E1"), None);
-    assert_eq!(crate::decode_f32("1e1000"), None);
-    assert_eq!(
-        crate::decode_f32("1e9999999999999999999999999999999999"),
-        None
-    );
     assert_eq!(crate::decode_f32("1e"), None);
     assert_eq!(crate::decode_f32("1E"), None);
 }
@@ -560,10 +567,22 @@ fn test_decode_f64() {
     ));
 
     assert_eq!(crate::decode_f64("0e99999999999999999"), Some(0.0));
+    assert_eq!(
+        crate::decode_f64("1e99999999999999999"),
+        Some(std::f64::INFINITY)
+    );
+    assert_eq!(
+        crate::decode_f64("-1e99999999999999999"),
+        Some(std::f64::NEG_INFINITY)
+    );
     assert_eq!(crate::decode_f64("1e-99999999999999999"), Some(0.0));
     assert_eq!(
         crate::decode_f64("0e9999999999999999999999999999999999"),
         Some(0.0)
+    );
+    assert_eq!(
+        crate::decode_f64("1e9999999999999999999999999999999999"),
+        Some(std::f64::INFINITY)
     );
     assert_eq!(
         crate::decode_f64("1e-9999999999999999999999999999999999"),
@@ -580,11 +599,6 @@ fn test_decode_f64() {
     assert_eq!(crate::decode_f64("+E1"), None);
     assert_eq!(crate::decode_f64("-e1"), None);
     assert_eq!(crate::decode_f64("-E1"), None);
-    assert_eq!(crate::decode_f64("1e1000"), None);
-    assert_eq!(
-        crate::decode_f64("1e9999999999999999999999999999999999"),
-        None
-    );
     assert_eq!(crate::decode_f64("1e"), None);
     assert_eq!(crate::decode_f64("1E"), None);
 }
