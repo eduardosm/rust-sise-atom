@@ -5,9 +5,7 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-#![allow(clippy::cognitive_complexity)]
 #![allow(clippy::excessive_precision)]
-#![allow(clippy::unreadable_literal)]
 
 // Encode
 #[test]
