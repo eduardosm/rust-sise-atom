@@ -114,9 +114,9 @@ fn test_encode_u128() {
 
 #[test]
 fn test_encode_f32() {
-    assert_eq!(crate::encode_f32(std::f32::NAN), "NaN");
-    assert_eq!(crate::encode_f32(std::f32::INFINITY), "inf");
-    assert_eq!(crate::encode_f32(std::f32::NEG_INFINITY), "-inf");
+    assert_eq!(crate::encode_f32(core::f32::NAN), "NaN");
+    assert_eq!(crate::encode_f32(core::f32::INFINITY), "inf");
+    assert_eq!(crate::encode_f32(core::f32::NEG_INFINITY), "-inf");
 
     assert_eq!(crate::encode_f32(0.0), "0.0");
     assert_eq!(crate::encode_f32(1.0), "1.0");
@@ -138,9 +138,9 @@ fn test_encode_f32() {
 
 #[test]
 fn test_encode_f64() {
-    assert_eq!(crate::encode_f64(std::f64::NAN), "NaN");
-    assert_eq!(crate::encode_f64(std::f64::INFINITY), "inf");
-    assert_eq!(crate::encode_f64(std::f64::NEG_INFINITY), "-inf");
+    assert_eq!(crate::encode_f64(core::f64::NAN), "NaN");
+    assert_eq!(crate::encode_f64(core::f64::INFINITY), "inf");
+    assert_eq!(crate::encode_f64(core::f64::NEG_INFINITY), "-inf");
 
     assert_eq!(crate::encode_f64(0.0), "0.0");
     assert_eq!(crate::encode_f64(1.0), "1.0");
@@ -412,13 +412,13 @@ fn test_decode_u128() {
 #[test]
 fn test_decode_f32() {
     fn approx(x: f32, y: f32) -> bool {
-        (x - y).abs() < (1.0 * std::f32::EPSILON * f32::max(x.abs(), y.abs()))
+        (x - y).abs() < (1.0 * core::f32::EPSILON * f32::max(x.abs(), y.abs()))
     }
 
     assert!(crate::decode_f32("NaN").unwrap().is_nan());
-    assert_eq!(crate::decode_f32("inf"), Some(std::f32::INFINITY));
-    assert_eq!(crate::decode_f32("+inf"), Some(std::f32::INFINITY));
-    assert_eq!(crate::decode_f32("-inf"), Some(std::f32::NEG_INFINITY));
+    assert_eq!(crate::decode_f32("inf"), Some(core::f32::INFINITY));
+    assert_eq!(crate::decode_f32("+inf"), Some(core::f32::INFINITY));
+    assert_eq!(crate::decode_f32("-inf"), Some(core::f32::NEG_INFINITY));
 
     assert_eq!(crate::decode_f32("0"), Some(0.0));
     assert_eq!(crate::decode_f32("0.0"), Some(0.0));
@@ -469,11 +469,11 @@ fn test_decode_f32() {
     assert_eq!(crate::decode_f32("0e99999999999999999"), Some(0.0));
     assert_eq!(
         crate::decode_f32("1e99999999999999999"),
-        Some(std::f32::INFINITY)
+        Some(core::f32::INFINITY)
     );
     assert_eq!(
         crate::decode_f32("-1e99999999999999999"),
-        Some(std::f32::NEG_INFINITY)
+        Some(core::f32::NEG_INFINITY)
     );
     assert_eq!(crate::decode_f32("1e-99999999999999999"), Some(0.0));
     assert_eq!(
@@ -482,7 +482,7 @@ fn test_decode_f32() {
     );
     assert_eq!(
         crate::decode_f32("1e9999999999999999999999999999999999"),
-        Some(std::f32::INFINITY)
+        Some(core::f32::INFINITY)
     );
     assert_eq!(
         crate::decode_f32("1e-9999999999999999999999999999999999"),
@@ -506,13 +506,13 @@ fn test_decode_f32() {
 #[test]
 fn test_decode_f64() {
     fn approx(x: f64, y: f64) -> bool {
-        (x - y).abs() < (1.0 * std::f64::EPSILON * f64::max(x.abs(), y.abs()))
+        (x - y).abs() < (1.0 * core::f64::EPSILON * f64::max(x.abs(), y.abs()))
     }
 
     assert!(crate::decode_f64("NaN").unwrap().is_nan());
-    assert_eq!(crate::decode_f64("inf"), Some(std::f64::INFINITY));
-    assert_eq!(crate::decode_f64("+inf"), Some(std::f64::INFINITY));
-    assert_eq!(crate::decode_f64("-inf"), Some(std::f64::NEG_INFINITY));
+    assert_eq!(crate::decode_f64("inf"), Some(core::f64::INFINITY));
+    assert_eq!(crate::decode_f64("+inf"), Some(core::f64::INFINITY));
+    assert_eq!(crate::decode_f64("-inf"), Some(core::f64::NEG_INFINITY));
 
     assert_eq!(crate::decode_f64("0"), Some(0.0));
     assert_eq!(crate::decode_f64("0.0"), Some(0.0));
@@ -570,11 +570,11 @@ fn test_decode_f64() {
     assert_eq!(crate::decode_f64("0e99999999999999999"), Some(0.0));
     assert_eq!(
         crate::decode_f64("1e99999999999999999"),
-        Some(std::f64::INFINITY)
+        Some(core::f64::INFINITY)
     );
     assert_eq!(
         crate::decode_f64("-1e99999999999999999"),
-        Some(std::f64::NEG_INFINITY)
+        Some(core::f64::NEG_INFINITY)
     );
     assert_eq!(crate::decode_f64("1e-99999999999999999"), Some(0.0));
     assert_eq!(
@@ -583,7 +583,7 @@ fn test_decode_f64() {
     );
     assert_eq!(
         crate::decode_f64("1e9999999999999999999999999999999999"),
-        Some(std::f64::INFINITY)
+        Some(core::f64::INFINITY)
     );
     assert_eq!(
         crate::decode_f64("1e-9999999999999999999999999999999999"),

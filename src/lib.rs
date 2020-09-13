@@ -21,6 +21,12 @@
     unused_qualifications
 )]
 #![forbid(unsafe_code)]
+#![no_std]
+
+extern crate alloc;
+
+use alloc::string::String;
+use alloc::vec::Vec;
 
 use flt2dec2flt::FloatExt as _;
 
@@ -705,9 +711,9 @@ fn preparse_float(atom: &str) -> Option<PreParsedFloat<'_>> {
 
 pub fn decode_f32(atom: &str) -> Option<f32> {
     match preparse_float(atom)? {
-        PreParsedFloat::NaN => Some(std::f32::NAN),
-        PreParsedFloat::Inf(false) => Some(std::f32::INFINITY),
-        PreParsedFloat::Inf(true) => Some(std::f32::NEG_INFINITY),
+        PreParsedFloat::NaN => Some(core::f32::NAN),
+        PreParsedFloat::Inf(false) => Some(core::f32::INFINITY),
+        PreParsedFloat::Inf(true) => Some(core::f32::NEG_INFINITY),
         PreParsedFloat::Zero(false) => Some(0.0),
         PreParsedFloat::Zero(true) => Some(-0.0),
         PreParsedFloat::Finite(preparsed) => f32::from_preparsed(preparsed),
@@ -716,9 +722,9 @@ pub fn decode_f32(atom: &str) -> Option<f32> {
 
 pub fn decode_f64(atom: &str) -> Option<f64> {
     match preparse_float(atom)? {
-        PreParsedFloat::NaN => Some(std::f64::NAN),
-        PreParsedFloat::Inf(false) => Some(std::f64::INFINITY),
-        PreParsedFloat::Inf(true) => Some(std::f64::NEG_INFINITY),
+        PreParsedFloat::NaN => Some(core::f64::NAN),
+        PreParsedFloat::Inf(false) => Some(core::f64::INFINITY),
+        PreParsedFloat::Inf(true) => Some(core::f64::NEG_INFINITY),
         PreParsedFloat::Zero(false) => Some(0.0),
         PreParsedFloat::Zero(true) => Some(-0.0),
         PreParsedFloat::Finite(preparsed) => f64::from_preparsed(preparsed),
@@ -996,7 +1002,7 @@ pub fn decode_utf8_string(atom: &str) -> Option<String> {
             },
             State::UnicodeEscape3(current_hex) => match iter.next() {
                 Some('}') => {
-                    string.push(std::char::from_u32(current_hex)?);
+                    string.push(core::char::from_u32(current_hex)?);
                     state = State::Normal;
                 }
                 Some(chr) => {
