@@ -732,14 +732,11 @@ pub fn decode_f64(atom: &str) -> Option<f64> {
 }
 
 fn hex_digit_to_u8(chr: char) -> Option<u8> {
-    if chr >= '0' && chr <= '9' {
-        Some(chr as u8 - b'0')
-    } else if chr >= 'A' && chr <= 'F' {
-        Some(chr as u8 - b'A' + 10)
-    } else if chr >= 'a' && chr <= 'f' {
-        Some(chr as u8 - b'a' + 10)
-    } else {
-        None
+    match chr {
+        '0'..='9' => Some(chr as u8 - b'0'),
+        'A'..='F' => Some(chr as u8 - b'A' + 10),
+        'a'..='f' => Some(chr as u8 - b'a' + 10),
+        _ => None,
     }
 }
 
