@@ -32,7 +32,7 @@ use core::convert::TryFrom as _;
 #[cfg(test)]
 mod tests;
 
-// Make this crate only compiles on Rust >=1.55
+// Make this crate only compile on Rust >=1.55
 // because previous versions have buggy float parsing.
 const _: bool = matches!(0, 0..);
 
