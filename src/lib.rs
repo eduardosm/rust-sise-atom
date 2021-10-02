@@ -386,142 +386,54 @@ pub fn decode_bool(atom: &str) -> Option<bool> {
     }
 }
 
-macro_rules! decode_signed_int {
-    ($sint:ident, $uint:ident, $atom:expr) => {{
-        enum State {
-            Beginning,
-            AfterSign,
-            Digits,
-        }
-
-        let mut sign = false;
-        let mut num: $uint = 0;
-
-        let mut iter = $atom.chars();
-        let mut state = State::Beginning;
-        loop {
-            match state {
-                State::Beginning => match iter.next() {
-                    Some('-') => {
-                        sign = true;
-                        state = State::AfterSign;
-                    }
-                    Some('+') => state = State::AfterSign,
-                    Some(chr @ '0'..='9') => {
-                        num = $uint::from(chr as u8 - b'0');
-                        state = State::Digits;
-                    }
-                    Some(_) | None => return None,
-                },
-                State::AfterSign => match iter.next() {
-                    Some(chr @ '0'..='9') => {
-                        num = $uint::from(chr as u8 - b'0');
-                        state = State::Digits;
-                    }
-                    Some(_) | None => return None,
-                },
-                State::Digits => match iter.next() {
-                    Some(chr @ '0'..='9') => {
-                        num = num
-                            .checked_mul(10)?
-                            .checked_add($uint::from(chr as u8 - b'0'))?;
-                    }
-                    Some(_) => return None,
-                    None => break,
-                },
-            }
-        }
-
-        if sign {
-            if num <= ($sint::min_value() as $uint) {
-                Some(num.wrapping_neg() as $sint)
-            } else {
-                None
-            }
-        } else {
-            if num <= ($sint::max_value() as $uint) {
-                Some(num as $sint)
-            } else {
-                None
-            }
-        }
-    }};
-}
-
+#[inline]
 pub fn decode_i8(atom: &str) -> Option<i8> {
-    decode_signed_int!(i8, u8, atom)
+    atom.parse().ok()
 }
 
+#[inline]
 pub fn decode_i16(atom: &str) -> Option<i16> {
-    decode_signed_int!(i16, u16, atom)
+    atom.parse().ok()
 }
 
+#[inline]
 pub fn decode_i32(atom: &str) -> Option<i32> {
-    decode_signed_int!(i32, u32, atom)
+    atom.parse().ok()
 }
 
+#[inline]
 pub fn decode_i64(atom: &str) -> Option<i64> {
-    decode_signed_int!(i64, u64, atom)
+    atom.parse().ok()
 }
 
+#[inline]
 pub fn decode_i128(atom: &str) -> Option<i128> {
-    decode_signed_int!(i128, u128, atom)
+    atom.parse().ok()
 }
 
-macro_rules! decode_unsigned_int {
-    ($uint:ident, $atom:expr) => {{
-        enum State {
-            Beginning,
-            Digits,
-        }
-
-        let mut num: $uint = 0;
-
-        let mut iter = $atom.chars();
-        let mut state = State::Beginning;
-        loop {
-            match state {
-                State::Beginning => match iter.next() {
-                    Some(chr @ '0'..='9') => {
-                        num = $uint::from(chr as u8 - b'0');
-                        state = State::Digits;
-                    }
-                    Some(_) | None => return None,
-                },
-                State::Digits => match iter.next() {
-                    Some(chr @ '0'..='9') => {
-                        num = num
-                            .checked_mul(10)?
-                            .checked_add($uint::from(chr as u8 - b'0'))?;
-                    }
-                    Some(_) => return None,
-                    None => break,
-                },
-            }
-        }
-
-        Some(num)
-    }};
-}
-
+#[inline]
 pub fn decode_u8(atom: &str) -> Option<u8> {
-    decode_unsigned_int!(u8, atom)
+    atom.parse().ok()
 }
 
+#[inline]
 pub fn decode_u16(atom: &str) -> Option<u16> {
-    decode_unsigned_int!(u16, atom)
+    atom.parse().ok()
 }
 
+#[inline]
 pub fn decode_u32(atom: &str) -> Option<u32> {
-    decode_unsigned_int!(u32, atom)
+    atom.parse().ok()
 }
 
+#[inline]
 pub fn decode_u64(atom: &str) -> Option<u64> {
-    decode_unsigned_int!(u64, atom)
+    atom.parse().ok()
 }
 
+#[inline]
 pub fn decode_u128(atom: &str) -> Option<u128> {
-    decode_unsigned_int!(u128, atom)
+    atom.parse().ok()
 }
 
 pub fn decode_f32(atom: &str) -> Option<f32> {
