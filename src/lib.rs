@@ -27,6 +27,7 @@ extern crate alloc;
 
 use alloc::string::{String, ToString as _};
 use alloc::vec::Vec;
+use core::convert::TryFrom as _;
 
 #[cfg(test)]
 mod tests;
@@ -480,7 +481,16 @@ pub fn decode_f64(atom: &str) -> Option<f64> {
     }
 }
 
-fn hex_digit_to_u8(chr: char) -> Option<u8> {
+fn hex_digit_byte_to_u8(chr: u8) -> Option<u8> {
+    match chr {
+        b'0'..=b'9' => Some(chr - b'0'),
+        b'A'..=b'F' => Some(chr - b'A' + 10),
+        b'a'..=b'f' => Some(chr - b'a' + 10),
+        _ => None,
+    }
+}
+
+fn hex_digit_char_to_u8(chr: char) -> Option<u8> {
     match chr {
         '0'..='9' => Some(chr as u8 - b'0'),
         'A'..='F' => Some(chr as u8 - b'A' + 10),
@@ -490,280 +500,149 @@ fn hex_digit_to_u8(chr: char) -> Option<u8> {
 }
 
 pub fn decode_byte_string(atom: &str) -> Option<Vec<u8>> {
-    enum State {
-        Beginning,
-        Normal,
-        AfterBackslash,
-        HexEscape1,
-        HexEscape2(u8),
-        Ending,
+    let mut iter = atom.bytes();
+    if iter.next() != Some(b'"') {
+        return None;
     }
 
     let mut string = Vec::new();
-
-    let mut iter = atom.chars();
-    let mut state = State::Beginning;
     loop {
-        match state {
-            State::Beginning => match iter.next() {
-                Some('"') => state = State::Normal,
-                Some(_) | None => return None,
-            },
-            State::Normal => match iter.next() {
-                Some('\\') => state = State::AfterBackslash,
-                Some('"') => state = State::Ending,
-                Some(chr) => {
-                    let mut utf8_buf = [0; 4];
-                    string.extend_from_slice(chr.encode_utf8(&mut utf8_buf).as_bytes());
+        match iter.next() {
+            None => return None,
+            Some(b'"') => {
+                if iter.next().is_some() {
+                    return None;
                 }
-                None => return None,
-            },
-            State::AfterBackslash => match iter.next() {
-                Some('0') => {
-                    string.push(b'\0');
-                    state = State::Normal;
-                }
-                Some('t') => {
-                    string.push(b'\t');
-                    state = State::Normal;
-                }
-                Some('n') => {
-                    string.push(b'\n');
-                    state = State::Normal;
-                }
-                Some('r') => {
-                    string.push(b'\r');
-                    state = State::Normal;
-                }
-                Some('"') => {
-                    string.push(b'"');
-                    state = State::Normal;
-                }
-                Some('\\') => {
-                    string.push(b'\\');
-                    state = State::Normal;
-                }
-                Some('x') => {
-                    state = State::HexEscape1;
-                }
-                Some(_) | None => return None,
-            },
-            State::HexEscape1 => match iter.next() {
-                Some(chr) => {
-                    let hex1 = hex_digit_to_u8(chr)?;
-                    state = State::HexEscape2(hex1);
-                }
-                None => return None,
-            },
-            State::HexEscape2(hex1) => match iter.next() {
-                Some(chr) => {
-                    let hex2 = hex_digit_to_u8(chr)?;
+                break;
+            }
+            Some(b'\\') => match iter.next() {
+                Some(b'0') => string.push(b'\0'),
+                Some(b't') => string.push(b'\t'),
+                Some(b'n') => string.push(b'\n'),
+                Some(b'r') => string.push(b'\r'),
+                Some(b'"') => string.push(b'\"'),
+                Some(b'\\') => string.push(b'\\'),
+                Some(b'x') => {
+                    let hex1 = hex_digit_byte_to_u8(iter.next()?)?;
+                    let hex2 = hex_digit_byte_to_u8(iter.next()?)?;
                     string.push((hex1 << 4) | hex2);
-                    state = State::Normal;
                 }
-                None => return None,
+                Some(_) | None => return None,
             },
-            State::Ending => match iter.next() {
-                None => return Some(string),
-                _ => return None,
-            },
+            Some(byte) => string.push(byte),
         }
     }
+
+    Some(string)
 }
 
 pub fn decode_ascii_string(atom: &str) -> Option<String> {
-    enum State {
-        Beginning,
-        Normal,
-        AfterBackslash,
-        HexEscape1,
-        HexEscape2(u8),
-        Ending,
+    let mut iter = atom.bytes();
+    if iter.next() != Some(b'"') {
+        return None;
     }
 
     let mut string = String::new();
-
-    let mut iter = atom.chars();
-    let mut state = State::Beginning;
     loop {
-        match state {
-            State::Beginning => match iter.next() {
-                Some('"') => state = State::Normal,
-                Some(_) | None => return None,
-            },
-            State::Normal => match iter.next() {
-                Some('\\') => state = State::AfterBackslash,
-                Some('"') => state = State::Ending,
-                Some(chr @ '\x00'..='\x7F') => string.push(chr),
-                Some(_) | None => return None,
-            },
-            State::AfterBackslash => match iter.next() {
-                Some('0') => {
-                    string.push('\0');
-                    state = State::Normal;
+        match iter.next() {
+            None => return None,
+            Some(b'"') => {
+                if iter.next().is_some() {
+                    return None;
                 }
-                Some('t') => {
-                    string.push('\t');
-                    state = State::Normal;
-                }
-                Some('n') => {
-                    string.push('\n');
-                    state = State::Normal;
-                }
-                Some('r') => {
-                    string.push('\r');
-                    state = State::Normal;
-                }
-                Some('"') => {
-                    string.push('"');
-                    state = State::Normal;
-                }
-                Some('\\') => {
-                    string.push('\\');
-                    state = State::Normal;
-                }
-                Some('x') => {
-                    state = State::HexEscape1;
-                }
-                Some(_) | None => return None,
-            },
-            State::HexEscape1 => match iter.next() {
-                Some(chr) => {
-                    let hex1 = hex_digit_to_u8(chr)?;
-                    state = State::HexEscape2(hex1);
-                }
-                None => return None,
-            },
-            State::HexEscape2(hex1) => match iter.next() {
-                Some(chr) => {
-                    let hex2 = hex_digit_to_u8(chr)?;
+                break;
+            }
+            Some(b'\\') => match iter.next() {
+                Some(b'0') => string.push('\0'),
+                Some(b't') => string.push('\t'),
+                Some(b'n') => string.push('\n'),
+                Some(b'r') => string.push('\r'),
+                Some(b'"') => string.push('\"'),
+                Some(b'\\') => string.push('\\'),
+                Some(b'x') => {
+                    let hex1 = hex_digit_byte_to_u8(iter.next()?)?;
+                    let hex2 = hex_digit_byte_to_u8(iter.next()?)?;
                     let chr = (hex1 << 4) | hex2;
                     if chr > 0x7F {
                         return None;
                     }
                     string.push(char::from(chr));
-                    state = State::Normal;
                 }
-                None => return None,
+                Some(_) | None => return None,
             },
-            State::Ending => match iter.next() {
-                None => return Some(string),
-                _ => return None,
-            },
+            Some(byte @ b'\x00'..=b'\x7F') => string.push(char::from(byte)),
+            Some(_) => return None,
         }
     }
+
+    Some(string)
 }
 
 pub fn decode_utf8_string(atom: &str) -> Option<String> {
-    enum State {
-        Beginning,
-        Normal,
-        AfterBackslash,
-        HexEscape1,
-        HexEscape2(u8),
-        UnicodeEscape1,
-        UnicodeEscape2,
-        UnicodeEscape3(u32),
-        Ending,
+    let mut iter = atom.chars();
+    if iter.next() != Some('"') {
+        return None;
     }
 
     let mut string = String::new();
-
-    let mut iter = atom.chars();
-    let mut state = State::Beginning;
     loop {
-        match state {
-            State::Beginning => match iter.next() {
-                Some('"') => state = State::Normal,
-                Some(_) | None => return None,
-            },
-            State::Normal => match iter.next() {
-                Some('\\') => state = State::AfterBackslash,
-                Some('"') => state = State::Ending,
-                Some(chr) => string.push(chr),
-                None => return None,
-            },
-            State::AfterBackslash => match iter.next() {
-                Some('0') => {
-                    string.push('\0');
-                    state = State::Normal;
+        match iter.next() {
+            None => return None,
+            Some('"') => {
+                if iter.next().is_some() {
+                    return None;
                 }
-                Some('t') => {
-                    string.push('\t');
-                    state = State::Normal;
-                }
-                Some('n') => {
-                    string.push('\n');
-                    state = State::Normal;
-                }
-                Some('r') => {
-                    string.push('\r');
-                    state = State::Normal;
-                }
-                Some('"') => {
-                    string.push('"');
-                    state = State::Normal;
-                }
-                Some('\\') => {
-                    string.push('\\');
-                    state = State::Normal;
-                }
+                break;
+            }
+            Some('\\') => match iter.next() {
+                Some('0') => string.push('\0'),
+                Some('t') => string.push('\t'),
+                Some('n') => string.push('\n'),
+                Some('r') => string.push('\r'),
+                Some('"') => string.push('\"'),
+                Some('\\') => string.push('\\'),
                 Some('x') => {
-                    state = State::HexEscape1;
-                }
-                Some('u') => {
-                    state = State::UnicodeEscape1;
-                }
-                Some(_) | None => return None,
-            },
-            State::HexEscape1 => match iter.next() {
-                Some(chr) => {
-                    let hex1 = hex_digit_to_u8(chr)?;
-                    state = State::HexEscape2(hex1);
-                }
-                None => return None,
-            },
-            State::HexEscape2(hex1) => match iter.next() {
-                Some(chr) => {
-                    let hex2 = hex_digit_to_u8(chr)?;
+                    let hex1 = hex_digit_char_to_u8(iter.next()?)?;
+                    let hex2 = hex_digit_char_to_u8(iter.next()?)?;
                     let chr = (hex1 << 4) | hex2;
                     if chr > 0x7F {
                         return None;
                     }
                     string.push(char::from(chr));
-                    state = State::Normal;
                 }
-                None => return None,
-            },
-            State::UnicodeEscape1 => match iter.next() {
-                Some('{') => state = State::UnicodeEscape2,
-                Some(_) | None => return None,
-            },
-            State::UnicodeEscape2 => match iter.next() {
-                Some(chr) => {
-                    let hex1 = hex_digit_to_u8(chr)?;
-                    state = State::UnicodeEscape3(u32::from(hex1));
-                }
-                None => return None,
-            },
-            State::UnicodeEscape3(current_hex) => match iter.next() {
-                Some('}') => {
-                    string.push(core::char::from_u32(current_hex)?);
-                    state = State::Normal;
-                }
-                Some(chr) => {
-                    if current_hex >= 0x1000_0000 {
+                Some('u') => {
+                    if iter.next() != Some('{') {
                         return None;
                     }
-                    let new_digit = u32::from(hex_digit_to_u8(chr)?);
-                    state = State::UnicodeEscape3((current_hex << 4) | new_digit);
+                    let mut num_digits = 0;
+                    let mut esc_chr: u32 = 0;
+                    loop {
+                        match iter.next() {
+                            Some('}') => {
+                                if num_digits == 0 {
+                                    return None;
+                                } else {
+                                    break;
+                                }
+                            }
+                            Some(chr) => {
+                                if num_digits == 6 {
+                                    return None;
+                                }
+                                esc_chr <<= 4;
+                                esc_chr |= u32::from(hex_digit_char_to_u8(chr)?);
+                                num_digits += 1;
+                            }
+                            None => return None,
+                        }
+                    }
+                    string.push(char::try_from(esc_chr).ok()?);
                 }
-                None => return None,
+                Some(_) | None => return None,
             },
-            State::Ending => match iter.next() {
-                None => return Some(string),
-                _ => return None,
-            },
+            Some(chr) => string.push(chr),
         }
     }
+
+    Some(string)
 }
