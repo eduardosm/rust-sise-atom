@@ -7,6 +7,3 @@ description = "Auxiliary functions used to encode and decode SISE atom values."
 repository = "https://github.com/eduardosm/rust-sise-atom"
 license = "MIT OR Apache-2.0"
 publish = false
-
-[dependencies]
-flt2dec2flt = "0.1.0"
