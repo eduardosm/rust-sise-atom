@@ -130,10 +130,10 @@ fn reformat_float(s: String) -> String {
             result.push_str("e-");
             write!(result, "{}", exp_abs).unwrap();
         } else {
-            result.push_str(&s);
+            result.push_str(s);
         }
     } else {
-        let s = s.strip_suffix(".0").unwrap_or(&s);
+        let s = s.strip_suffix(".0").unwrap_or(s);
         if s.contains('.') {
             result.push_str(s);
         } else {
