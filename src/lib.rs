@@ -10,7 +10,7 @@
 //!
 //! # Minimum Rust version
 //!
-//! The minimum Rust version required by this crate is 1.51.
+//! The minimum Rust version required by this crate is 1.55.
 
 #![deny(
     rust_2018_idioms,
@@ -30,6 +30,10 @@ use alloc::vec::Vec;
 
 #[cfg(test)]
 mod tests;
+
+// Make this crate only compiles on Rust >=1.55
+// because previous versions have buggy float parsing.
+const _: bool = matches!(0, 0..);
 
 // Encode
 /// Returns `"true"` if `value` is `true`,
