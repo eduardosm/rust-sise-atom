@@ -481,6 +481,7 @@ pub fn decode_f64(atom: &str) -> Option<f64> {
     }
 }
 
+#[inline]
 fn hex_digit_byte_to_u8(chr: u8) -> Option<u8> {
     match chr {
         b'0'..=b'9' => Some(chr - b'0'),
@@ -490,6 +491,7 @@ fn hex_digit_byte_to_u8(chr: u8) -> Option<u8> {
     }
 }
 
+#[inline]
 fn hex_digit_char_to_u8(chr: char) -> Option<u8> {
     match chr {
         '0'..='9' => Some(chr as u8 - b'0'),
