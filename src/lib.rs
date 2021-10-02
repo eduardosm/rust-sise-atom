@@ -378,6 +378,7 @@ pub fn encode_utf8_string(string: &str) -> String {
 /// Returns `Some(true)` if `atom == "true"`,
 /// `Some(false)` if `atom == "false"`, or `None`
 /// otherwise.
+#[inline]
 pub fn decode_bool(atom: &str) -> Option<bool> {
     match atom {
         "false" => Some(false),
