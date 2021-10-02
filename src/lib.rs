@@ -28,6 +28,7 @@ extern crate alloc;
 use alloc::string::{String, ToString as _};
 use alloc::vec::Vec;
 use core::convert::TryFrom as _;
+use core::fmt::Write as _;
 
 #[cfg(test)]
 mod tests;
@@ -47,183 +48,71 @@ pub fn encode_bool(value: bool) -> &'static str {
     }
 }
 
-macro_rules! encode_signed_int {
-    ($sint:ident, $uint:ident, $value:expr, $output:expr) => {
-        let mut remaining_digits: $uint = {
-            if $value < 0 {
-                $output.push('-');
-                $value.wrapping_neg() as $uint
-            } else {
-                $value as $uint
-            }
-        };
-        let digits_beginning = $output.len();
-        loop {
-            #[allow(trivial_numeric_casts)]
-            let current_digit = (remaining_digits % 10) as u8;
-            remaining_digits /= 10;
-            $output.insert(digits_beginning, char::from(current_digit + b'0'));
-            if remaining_digits == 0 {
-                break;
-            }
-        }
-    };
-}
-
-pub fn encode_i8_into(value: i8, output: &mut String) {
-    if value < 0 {
-        output.push('-');
-    }
-    let mut n = value.unsigned_abs();
-    if n >= 10 {
-        if n >= 100 {
-            output.push(char::from(b'0' + n / 100));
-            n %= 100;
-        }
-        output.push(char::from(b'0' + n / 10));
-        n %= 10;
-    }
-    output.push(char::from(b'0' + n));
-}
-
 #[inline]
 pub fn encode_i8(value: i8) -> String {
-    let mut output = String::new();
-    encode_i8_into(value, &mut output);
-    output
-}
-
-pub fn encode_i16_into(value: i16, output: &mut String) {
-    encode_signed_int!(i16, u16, value, output);
+    value.to_string()
 }
 
 #[inline]
 pub fn encode_i16(value: i16) -> String {
-    let mut output = String::new();
-    encode_i16_into(value, &mut output);
-    output
-}
-
-pub fn encode_i32_into(value: i32, output: &mut String) {
-    encode_signed_int!(i32, u32, value, output);
+    value.to_string()
 }
 
 #[inline]
 pub fn encode_i32(value: i32) -> String {
-    let mut output = String::new();
-    encode_i32_into(value, &mut output);
-    output
-}
-
-pub fn encode_i64_into(value: i64, output: &mut String) {
-    encode_signed_int!(i64, u64, value, output);
+    value.to_string()
 }
 
 #[inline]
 pub fn encode_i64(value: i64) -> String {
-    let mut output = String::new();
-    encode_i64_into(value, &mut output);
-    output
-}
-
-pub fn encode_i128_into(value: i128, output: &mut String) {
-    encode_signed_int!(i128, u128, value, output);
+    value.to_string()
 }
 
 #[inline]
 pub fn encode_i128(value: i128) -> String {
-    let mut output = String::new();
-    encode_i128_into(value, &mut output);
-    output
-}
-
-macro_rules! encode_unsigned_int {
-    ($uint:ident, $value:expr, $output:expr) => {
-        let mut remaining_digits: $uint = $value;
-        let digits_beginning = $output.len();
-        loop {
-            #[allow(trivial_numeric_casts)]
-            let current_digit = (remaining_digits % 10) as u8;
-            remaining_digits /= 10;
-            $output.insert(digits_beginning, char::from(current_digit + b'0'));
-            if remaining_digits == 0 {
-                break;
-            }
-        }
-    };
-}
-
-pub fn encode_u8_into(value: u8, output: &mut String) {
-    let mut n = value;
-    if n >= 10 {
-        if n >= 100 {
-            output.push(char::from(b'0' + n / 100));
-            n %= 100;
-        }
-        output.push(char::from(b'0' + n / 10));
-        n %= 10;
-    }
-    output.push(char::from(b'0' + n));
+    value.to_string()
 }
 
 #[inline]
 pub fn encode_u8(value: u8) -> String {
-    let mut output = String::new();
-    encode_u8_into(value, &mut output);
-    output
-}
-
-pub fn encode_u16_into(value: u16, output: &mut String) {
-    encode_unsigned_int!(u16, value, output);
+    value.to_string()
 }
 
 #[inline]
 pub fn encode_u16(value: u16) -> String {
-    let mut output = String::new();
-    encode_u16_into(value, &mut output);
-    output
-}
-
-pub fn encode_u32_into(value: u32, output: &mut String) {
-    encode_unsigned_int!(u32, value, output);
+    value.to_string()
 }
 
 #[inline]
 pub fn encode_u32(value: u32) -> String {
-    let mut output = String::new();
-    encode_u32_into(value, &mut output);
-    output
-}
-
-pub fn encode_u64_into(value: u64, output: &mut String) {
-    encode_unsigned_int!(u64, value, output);
+    value.to_string()
 }
 
 #[inline]
 pub fn encode_u64(value: u64) -> String {
-    let mut output = String::new();
-    encode_u64_into(value, &mut output);
-    output
-}
-
-pub fn encode_u128_into(value: u128, output: &mut String) {
-    encode_unsigned_int!(u128, value, output);
+    value.to_string()
 }
 
 #[inline]
 pub fn encode_u128(value: u128) -> String {
-    let mut output = String::new();
-    encode_u128_into(value, &mut output);
-    output
+    value.to_string()
 }
 
-fn reformat_float(s: &str, output: &mut String) {
+fn reformat_float(s: String) -> String {
     if s == "NaN" || s == "inf" || s == "-inf" {
-        output.push_str(s);
-        return;
+        return s;
     }
 
     const ZEROS_THRESHOLD: u32 = 9;
+
+    let mut result = String::new();
+    let s = if let Some(remaining) = s.strip_prefix('-') {
+        result.push('-');
+        remaining
+    } else {
+        s.as_str()
+    };
+
     if let Some(mut remaining) = s.strip_prefix("0.") {
         let mut exp_abs: u32 = 1;
         while let Some(new_remaining) = remaining.strip_prefix('0') {
@@ -231,22 +120,22 @@ fn reformat_float(s: &str, output: &mut String) {
             exp_abs += 1;
         }
         if exp_abs > ZEROS_THRESHOLD {
-            output.push_str(&remaining[..1]);
+            result.push_str(&remaining[..1]);
             if remaining.len() > 1 {
-                output.push('.');
-                output.push_str(&remaining[1..]);
+                result.push('.');
+                result.push_str(&remaining[1..]);
             } else {
-                output.push_str(".0");
+                result.push_str(".0");
             }
-            output.push_str("e-");
-            encode_u32_into(exp_abs, output);
+            result.push_str("e-");
+            write!(result, "{}", exp_abs).unwrap();
         } else {
-            output.push_str(s);
+            result.push_str(&s);
         }
     } else {
-        let s = s.strip_suffix(".0").unwrap_or(s);
+        let s = s.strip_suffix(".0").unwrap_or(&s);
         if s.contains('.') {
-            output.push_str(s);
+            result.push_str(s);
         } else {
             let mut remaining = s;
             let mut num_zeros: u32 = 0;
@@ -255,45 +144,36 @@ fn reformat_float(s: &str, output: &mut String) {
                 num_zeros += 1;
             }
             if num_zeros > ZEROS_THRESHOLD {
-                output.push_str(&remaining[..1]);
+                result.push_str(&remaining[..1]);
                 if remaining.len() > 1 {
-                    output.push('.');
-                    output.push_str(&remaining[1..]);
+                    result.push('.');
+                    result.push_str(&remaining[1..]);
                 } else {
-                    output.push_str(".0");
+                    result.push_str(".0");
                 }
-                output.push('e');
-                encode_u32_into(num_zeros + (remaining.len() as u32 - 1), output);
+                result.push('e');
+                write!(result, "{}", num_zeros + (remaining.len() as u32 - 1)).unwrap();
             } else {
-                output.push_str(s);
-                output.push_str(".0");
+                result.push_str(s);
+                result.push_str(".0");
             }
         }
     }
-}
 
-pub fn encode_f32_into(value: f32, output: &mut String) {
-    reformat_float(&value.to_string(), output)
+    result
 }
 
 #[inline]
 pub fn encode_f32(value: f32) -> String {
-    let mut output = String::new();
-    encode_f32_into(value, &mut output);
-    output
-}
-
-pub fn encode_f64_into(value: f64, output: &mut String) {
-    reformat_float(&value.to_string(), output)
+    reformat_float(value.to_string())
 }
 
 #[inline]
 pub fn encode_f64(value: f64) -> String {
-    let mut output = String::new();
-    encode_f64_into(value, &mut output);
-    output
+    reformat_float(value.to_string())
 }
 
+#[inline]
 fn nibble_to_hex(nibble: u8) -> char {
     if nibble < 10 {
         char::from(b'0' + nibble)
@@ -302,82 +182,73 @@ fn nibble_to_hex(nibble: u8) -> char {
     }
 }
 
-pub fn encode_byte_string_into(string: &[u8], output: &mut String) {
-    output.push('"');
+pub fn encode_byte_string(string: &[u8]) -> String {
+    let mut result = String::with_capacity(string.len() + 2);
+    result.push('"');
     for &chr in string {
         #[allow(clippy::match_overlapping_arm)]
         match chr {
-            b'\0' => output.push_str("\\0"),
-            b'\t' => output.push_str("\\t"),
-            b'\n' => output.push_str("\\n"),
-            b'\r' => output.push_str("\\r"),
-            b'"' => output.push_str("\\\""),
-            b'\\' => output.push_str("\\\\"),
-            0x20..=0x7E => output.push(char::from(chr)),
+            b'\0' => result.push_str("\\0"),
+            b'\t' => result.push_str("\\t"),
+            b'\n' => result.push_str("\\n"),
+            b'\r' => result.push_str("\\r"),
+            b'"' => result.push_str("\\\""),
+            b'\\' => result.push_str("\\\\"),
+            0x20..=0x7E => result.push(char::from(chr)),
             _ => {
-                output.push_str("\\x");
-                output.push(nibble_to_hex(chr >> 4));
-                output.push(nibble_to_hex(chr & 0xF));
+                result.push_str("\\x");
+                result.push(nibble_to_hex(chr >> 4));
+                result.push(nibble_to_hex(chr & 0xF));
             }
         }
     }
-    output.push('"');
+    result.push('"');
+    result
 }
 
-#[inline]
-pub fn encode_byte_string(string: &[u8]) -> String {
-    let mut output = String::new();
-    encode_byte_string_into(string, &mut output);
-    output
-}
-
-pub fn encode_ascii_string_into(string: &str, output: &mut String) {
-    output.push('"');
+pub fn encode_ascii_string(string: &str) -> String {
+    let mut result = String::with_capacity(string.len() + 2);
+    result.push('"');
     for &chr in string.as_bytes() {
         #[allow(clippy::match_overlapping_arm)]
         match chr {
-            b'\0' => output.push_str("\\0"),
-            b'\t' => output.push_str("\\t"),
-            b'\n' => output.push_str("\\n"),
-            b'\r' => output.push_str("\\r"),
-            b'"' => output.push_str("\\\""),
-            b'\\' => output.push_str("\\\\"),
-            0x20..=0x7E => output.push(char::from(chr)),
+            b'\0' => result.push_str("\\0"),
+            b'\t' => result.push_str("\\t"),
+            b'\n' => result.push_str("\\n"),
+            b'\r' => result.push_str("\\r"),
+            b'"' => result.push_str("\\\""),
+            b'\\' => result.push_str("\\\\"),
+            0x20..=0x7E => result.push(char::from(chr)),
             _ => {
                 assert!(chr <= 0x7F, "Invalid ASCII character");
-                output.push_str("\\x");
-                output.push(nibble_to_hex(chr >> 4));
-                output.push(nibble_to_hex(chr & 0xF));
+                result.push_str("\\x");
+                result.push(nibble_to_hex(chr >> 4));
+                result.push(nibble_to_hex(chr & 0xF));
             }
         }
     }
-    output.push('"');
+    result.push('"');
+    result
 }
 
-#[inline]
-pub fn encode_ascii_string(string: &str) -> String {
-    let mut output = String::new();
-    encode_ascii_string_into(string, &mut output);
-    output
-}
-
-pub fn encode_utf8_string_into(string: &str, output: &mut String) {
-    output.push('"');
+pub fn encode_utf8_string(string: &str) -> String {
+    let mut result = String::with_capacity(string.len() + 2);
+    result.push('"');
     for chr in string.chars() {
         match chr {
-            '\0' => output.push_str("\\0"),
-            '\t' => output.push_str("\\t"),
-            '\n' => output.push_str("\\n"),
-            '\r' => output.push_str("\\r"),
-            '"' => output.push_str("\\\""),
-            '\\' => output.push_str("\\\\"),
-            '\x20'..='\x7E' => output.push(chr),
+            '\0' => result.push_str("\\0"),
+            '\t' => result.push_str("\\t"),
+            '\n' => result.push_str("\\n"),
+            '\r' => result.push_str("\\r"),
+            '"' => result.push_str("\\\""),
+            '\\' => result.push_str("\\\\"),
+            '\x20'..='\x7E' => result.push(chr),
             _ => {
-                output.push_str("\\u{");
-                let code_beginning = output.len();
+                result.push_str("\\u{");
+                let code_beginning = result.len();
                 let mut remaining_digits = u32::from(chr);
                 loop {
-                    output.insert(
+                    result.insert(
                         code_beginning,
                         nibble_to_hex((remaining_digits & 0xF) as u8),
                     );
@@ -386,18 +257,12 @@ pub fn encode_utf8_string_into(string: &str, output: &mut String) {
                         break;
                     }
                 }
-                output.push('}');
+                result.push('}');
             }
         }
     }
-    output.push('"');
-}
-
-#[inline]
-pub fn encode_utf8_string(string: &str) -> String {
-    let mut output = String::new();
-    encode_utf8_string_into(string, &mut output);
-    output
+    result.push('"');
+    result
 }
 
 // Decode
