@@ -713,4 +713,6 @@ fn test_decode_utf8_string() {
     assert_eq!(crate::decode_utf8_string(r#"" \xT0 ""#), None);
     assert_eq!(crate::decode_utf8_string(r#"" \x0T ""#), None);
     assert_eq!(crate::decode_utf8_string(r#"" \x80 ""#), None);
+    assert_eq!(crate::decode_utf8_string(r#"" \u{11FFFF} ""#), None);
+    assert_eq!(crate::decode_utf8_string(r#"" \u{0000000} ""#), None);
 }
