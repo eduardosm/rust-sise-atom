@@ -25,7 +25,7 @@
 
 extern crate alloc;
 
-use alloc::string::String;
+use alloc::string::{String, ToString as _};
 use alloc::vec::Vec;
 
 #[cfg(test)]
@@ -272,7 +272,7 @@ fn reformat_float(s: &str, output: &mut String) {
 }
 
 pub fn encode_f32_into(value: f32, output: &mut String) {
-    reformat_float(&alloc::format!("{}", value), output)
+    reformat_float(&value.to_string(), output)
 }
 
 #[inline]
@@ -283,7 +283,7 @@ pub fn encode_f32(value: f32) -> String {
 }
 
 pub fn encode_f64_into(value: f64, output: &mut String) {
-    reformat_float(&alloc::format!("{}", value), output)
+    reformat_float(&value.to_string(), output)
 }
 
 #[inline]
