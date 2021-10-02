@@ -437,6 +437,7 @@ pub fn decode_u128(atom: &str) -> Option<u128> {
     atom.parse().ok()
 }
 
+#[inline]
 pub fn decode_f32(atom: &str) -> Option<f32> {
     if atom == "+NaN" || atom == "-NaN" {
         None
@@ -445,6 +446,7 @@ pub fn decode_f32(atom: &str) -> Option<f32> {
     }
 }
 
+#[inline]
 pub fn decode_f64(atom: &str) -> Option<f64> {
     if atom == "+NaN" || atom == "-NaN" {
         None
