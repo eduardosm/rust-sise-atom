@@ -21,6 +21,8 @@ fn test_encode_i8() {
     assert_eq!(crate::encode_i8(-1), "-1");
     assert_eq!(crate::encode_i8(127), "127");
     assert_eq!(crate::encode_i8(-128), "-128");
+    assert_eq!(crate::encode_i8(22), "22");
+    assert_eq!(crate::encode_i8(-22), "-22");
 }
 
 #[test]
@@ -30,6 +32,12 @@ fn test_encode_i16() {
     assert_eq!(crate::encode_i16(-1), "-1");
     assert_eq!(crate::encode_i16(32767), "32767");
     assert_eq!(crate::encode_i16(-32768), "-32768");
+    assert_eq!(crate::encode_i16(22), "22");
+    assert_eq!(crate::encode_i16(-22), "-22");
+    assert_eq!(crate::encode_i16(222), "222");
+    assert_eq!(crate::encode_i16(-222), "-222");
+    assert_eq!(crate::encode_i16(2222), "2222");
+    assert_eq!(crate::encode_i16(-2222), "-2222");
 }
 
 #[test]
@@ -76,6 +84,7 @@ fn test_encode_u8() {
     assert_eq!(crate::encode_u8(0), "0");
     assert_eq!(crate::encode_u8(1), "1");
     assert_eq!(crate::encode_u8(255), "255");
+    assert_eq!(crate::encode_u8(22), "22");
 }
 
 #[test]
@@ -83,6 +92,9 @@ fn test_encode_u16() {
     assert_eq!(crate::encode_u16(0), "0");
     assert_eq!(crate::encode_u16(1), "1");
     assert_eq!(crate::encode_u16(65535), "65535");
+    assert_eq!(crate::encode_u16(22), "22");
+    assert_eq!(crate::encode_u16(222), "222");
+    assert_eq!(crate::encode_u16(2222), "2222");
 }
 
 #[test]
