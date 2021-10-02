@@ -70,7 +70,19 @@ macro_rules! encode_signed_int {
 }
 
 pub fn encode_i8_into(value: i8, output: &mut String) {
-    encode_signed_int!(i8, u8, value, output);
+    if value < 0 {
+        output.push('-');
+    }
+    let mut n = value.unsigned_abs();
+    if n >= 10 {
+        if n >= 100 {
+            output.push(char::from(b'0' + n / 100));
+            n %= 100;
+        }
+        output.push(char::from(b'0' + n / 10));
+        n %= 10;
+    }
+    output.push(char::from(b'0' + n));
 }
 
 #[inline]
@@ -141,7 +153,16 @@ macro_rules! encode_unsigned_int {
 }
 
 pub fn encode_u8_into(value: u8, output: &mut String) {
-    encode_unsigned_int!(u8, value, output);
+    let mut n = value;
+    if n >= 10 {
+        if n >= 100 {
+            output.push(char::from(b'0' + n / 100));
+            n %= 100;
+        }
+        output.push(char::from(b'0' + n / 10));
+        n %= 10;
+    }
+    output.push(char::from(b'0' + n));
 }
 
 #[inline]
