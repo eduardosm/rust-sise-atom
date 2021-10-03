@@ -35,6 +35,9 @@ mod tests;
 
 // Make this crate only compile on Rust >=1.55
 // because previous versions have buggy float parsing.
+// Open range patterns (e.g., `0..`) have been stabilized
+// in Rust 1.55, so this will fail to compile on previous
+// versions.
 const _: bool = matches!(0, 0..);
 
 // Encode
