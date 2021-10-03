@@ -41,8 +41,10 @@ mod tests;
 const _: bool = matches!(0, 0..);
 
 // Encode
-/// Returns `"true"` if `value` is `true`,
-/// otherwise returns `"false"`.
+/// Encodes a boolean value
+///
+///
+/// Returns `"true"` if `value` is `true`, otherwise returns `"false"`.
 pub fn encode_bool(value: bool) -> &'static str {
     if value {
         "true"
@@ -51,51 +53,61 @@ pub fn encode_bool(value: bool) -> &'static str {
     }
 }
 
+/// Encodes a signed 8-bit integer
 #[inline]
 pub fn encode_i8(value: i8) -> String {
     value.to_string()
 }
 
+/// Encodes a signed 16-bit integer
 #[inline]
 pub fn encode_i16(value: i16) -> String {
     value.to_string()
 }
 
+/// Encodes a signed 32-bit integer
 #[inline]
 pub fn encode_i32(value: i32) -> String {
     value.to_string()
 }
 
+/// Encodes a signed 64-bit integer
 #[inline]
 pub fn encode_i64(value: i64) -> String {
     value.to_string()
 }
 
+/// Encodes a signed 128-bit integer
 #[inline]
 pub fn encode_i128(value: i128) -> String {
     value.to_string()
 }
 
+/// Encodes an unsigned 8-bit integer
 #[inline]
 pub fn encode_u8(value: u8) -> String {
     value.to_string()
 }
 
+/// Encodes an unsigned 16-bit integer
 #[inline]
 pub fn encode_u16(value: u16) -> String {
     value.to_string()
 }
 
+/// Encodes an unsigned 32-bit integer
 #[inline]
 pub fn encode_u32(value: u32) -> String {
     value.to_string()
 }
 
+/// Encodes an unsigned 64-bit integer
 #[inline]
 pub fn encode_u64(value: u64) -> String {
     value.to_string()
 }
 
+/// Encodes an unsigned 128-bit integer
 #[inline]
 pub fn encode_u128(value: u128) -> String {
     value.to_string()
@@ -166,11 +178,13 @@ fn reformat_float(s: String) -> String {
     result
 }
 
+/// Encodes a 32-bit floating point number
 #[inline]
 pub fn encode_f32(value: f32) -> String {
     reformat_float(value.to_string())
 }
 
+/// Encodes a 64-bit floating point number
 #[inline]
 pub fn encode_f64(value: f64) -> String {
     reformat_float(value.to_string())
@@ -269,9 +283,10 @@ pub fn encode_utf8_string(string: &str) -> String {
 }
 
 // Decode
-/// Returns `Some(true)` if `atom == "true"`,
-/// `Some(false)` if `atom == "false"`, or `None`
-/// otherwise.
+/// Decodes a boolean value
+///
+/// Returns `Some(true)` if `atom` is `"true"`, `Some(false)`
+/// if `atom` is `"false"`, or `None` otherwise.
 #[inline]
 pub fn decode_bool(atom: &str) -> Option<bool> {
     match atom {
@@ -281,56 +296,67 @@ pub fn decode_bool(atom: &str) -> Option<bool> {
     }
 }
 
+/// Decodes a signed 8-bit integer
 #[inline]
 pub fn decode_i8(atom: &str) -> Option<i8> {
     atom.parse().ok()
 }
 
+/// Decodes a signed 16-bit integer
 #[inline]
 pub fn decode_i16(atom: &str) -> Option<i16> {
     atom.parse().ok()
 }
 
+/// Decodes a signed 32-bit integer
 #[inline]
 pub fn decode_i32(atom: &str) -> Option<i32> {
     atom.parse().ok()
 }
 
+/// Decodes a signed 64-bit integer
 #[inline]
 pub fn decode_i64(atom: &str) -> Option<i64> {
     atom.parse().ok()
 }
 
+/// Decodes a signed 128-bit integer
 #[inline]
 pub fn decode_i128(atom: &str) -> Option<i128> {
     atom.parse().ok()
 }
 
+/// Decodes an unsigned 8-bit integer
 #[inline]
 pub fn decode_u8(atom: &str) -> Option<u8> {
     atom.parse().ok()
 }
 
+/// Decodes an unsigned 16-bit integer
 #[inline]
 pub fn decode_u16(atom: &str) -> Option<u16> {
     atom.parse().ok()
 }
 
+/// Decodes an unsigned 32-bit integer
 #[inline]
 pub fn decode_u32(atom: &str) -> Option<u32> {
     atom.parse().ok()
 }
 
+/// Decodes an unsigned 64-bit integer
 #[inline]
 pub fn decode_u64(atom: &str) -> Option<u64> {
     atom.parse().ok()
 }
 
+/// Decodes an unsigned 128-bit integer
 #[inline]
 pub fn decode_u128(atom: &str) -> Option<u128> {
     atom.parse().ok()
 }
 
+/// Decodes a 32-bit floating point number
 #[inline]
 pub fn decode_f32(atom: &str) -> Option<f32> {
     if atom == "+NaN" || atom == "-NaN" {
@@ -340,6 +366,7 @@ pub fn decode_f32(atom: &str) -> Option<f32> {
     }
 }
 
+/// Decodes a 64-bit floating point number
 #[inline]
 pub fn decode_f64(atom: &str) -> Option<f64> {
     if atom == "+NaN" || atom == "-NaN" {
