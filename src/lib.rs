@@ -10,7 +10,7 @@
 //!
 //! # Minimum Rust version
 //!
-//! The minimum Rust version required by this crate is 1.55.
+//! The minimum Rust version required by this crate is 1.56.
 
 #![deny(
     rust_2018_idioms,
@@ -27,18 +27,10 @@ extern crate alloc;
 
 use alloc::string::{String, ToString as _};
 use alloc::vec::Vec;
-use core::convert::TryFrom as _;
 use core::fmt::Write as _;
 
 #[cfg(test)]
 mod tests;
-
-// Make this crate only compile on Rust >=1.55
-// because previous versions have buggy float parsing.
-// Open range patterns (e.g., `0..`) have been stabilized
-// in Rust 1.55, so this will fail to compile on previous
-// versions.
-const _: bool = matches!(0, 0..);
 
 // Encode
 /// Encodes a boolean value
